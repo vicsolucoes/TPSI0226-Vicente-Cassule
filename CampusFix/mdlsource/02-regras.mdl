@@ -1,0 +1,251 @@
+mdl 1;
+
+/** Verifica um perfil efetivamente associado à conta, sem confiar no cliente.
+ * Submicroflow interno: não recebe permissões de execução pelo cliente.
+ */
+create or modify microflow CampusFix.SUB_TemPerfil (
+  $Actor: System.User, $Perfil: String
+) returns Boolean
+folder 'Regras/Seguranca'
+begin
+  if $Actor = empty then return false; end if;
+  retrieve $Perfis from $Actor/System.UserRoles;
+  $Correspondencias = filter $Perfis where $currentObject/Name = $Perfil;
+  $Numero = count $Correspondencias;
+  return $Numero > 0;
+end;
+
+/** Compatibilidade com o perfil User incluído no modelo inicial Mendix. */
+create or modify microflow CampusFix.SUB_EhUtilizador ($Actor: System.User)
+returns Boolean
+folder 'Regras/Seguranca'
+begin
+  $Principal = call microflow CampusFix.SUB_TemPerfil(Actor = $Actor, Perfil = 'Utilizador');
+  $ModeloInicial = call microflow CampusFix.SUB_TemPerfil(Actor = $Actor, Perfil = 'User');
+  return $Principal or $ModeloInicial;
+end;
+
+/** Estado aberto permite acrescentar informação e iniciar/tratar o pedido. */
+create or modify microflow CampusFix.SUB_Pedido_Aberto ($Pedido: CampusFix.Pedido)
+returns Boolean
+folder 'Regras/Pedidos'
+begin
+  if $Pedido = empty then return false; end if;
+  return $Pedido/Estado = CampusFix.Estado.Novo
+    or $Pedido/Estado = CampusFix.Estado.EmAnalise
+    or $Pedido/Estado = CampusFix.Estado.EmTratamento;
+end;
+
+/** Mesma política de visibilidade das regras XPath de Entity Access. */
+create or modify microflow CampusFix.SUB_Pedido_PodeConsultar (
+  $Pedido: CampusFix.Pedido, $Actor: System.User
+) returns Boolean
+folder 'Regras/Seguranca'
+begin
+  if $Pedido = empty or $Actor = empty then return false; end if;
+  $Admin = call microflow CampusFix.SUB_TemPerfil(Actor = $Actor, Perfil = 'Administrator');
+  if $Admin then return true; end if;
+  $Utilizador = call microflow CampusFix.SUB_EhUtilizador(Actor = $Actor);
+  if $Utilizador and $Pedido/CampusFix.Pedido_Criador = $Actor then return true; end if;
+  $Tecnico = call microflow CampusFix.SUB_TemPerfil(Actor = $Actor, Perfil = 'Tecnico');
+  if not($Tecnico) then return false; end if;
+  if $Pedido/CampusFix.Pedido_Tecnico = $Actor then return true; end if;
+  $Aberto = call microflow CampusFix.SUB_Pedido_Aberto(Pedido = $Pedido);
+  return $Pedido/CampusFix.Pedido_Tecnico = empty and $Aberto;
+end;
+
+/** Mensagem de validação independente da interface; vazia significa válido. */
+create or modify microflow CampusFix.SUB_Formulario_Validar (
+  $Formulario: CampusFix.FormularioPedido
+) returns String
+folder 'Regras/Validacoes'
+begin
+  if $Formulario = empty then return 'O formulário não está disponível.'; end if;
+  if length(trim($Formulario/Titulo)) < 3 then
+    return 'O título deve ter pelo menos 3 caracteres.';
+  end if;
+  if length(trim($Formulario/Descricao)) < 10 then
+    return 'Descreve o problema com pelo menos 10 caracteres.';
+  end if;
+  if $Formulario/Prioridade = empty then return 'Escolhe a prioridade.'; end if;
+  retrieve $Categoria from $Formulario/CampusFix.Formulario_Categoria;
+  if $Categoria = empty then return 'Escolhe uma categoria.'; end if;
+  retrieve $CategoriaPersistida from CampusFix.Categoria where [id = $Categoria] first;
+  if $CategoriaPersistida = empty then return 'A categoria já não existe.'; end if;
+  if not($CategoriaPersistida/Ativa) then
+    retrieve $Original from $Formulario/CampusFix.Formulario_Pedido;
+    if $Original = empty then return 'Escolhe uma categoria ativa.'; end if;
+    if $Original/CampusFix.Pedido_Categoria != $CategoriaPersistida then
+      return 'Escolhe uma categoria ativa.';
+    end if;
+  end if;
+  return '';
+end;
+
+/** Persiste um evento de estado dentro da transação do pedido. */
+create or modify microflow CampusFix.SUB_Historico_Registar (
+  $Pedido: CampusFix.Pedido, $Actor: System.User,
+  $Anterior: Enumeration(CampusFix.Estado), $Novo: Enumeration(CampusFix.Estado)
+) returns Boolean
+folder 'Regras/Historico'
+begin
+  if $Pedido = empty or $Actor = empty then return false; end if;
+  $Evento = create CampusFix.HistoricoEstado (
+    EstadoAnterior = $Anterior, EstadoNovo = $Novo,
+    DataAlteracao = [%CurrentDateTime%], AutorNome = $Actor/Name,
+    CampusFix.Historico_Pedido = $Pedido, CampusFix.Historico_Autor = $Actor
+  );
+  commit $Evento;
+  return true;
+end;
+
+/** MF01: cria ou edita só os campos permitidos, com validação e identidade do servidor.
+ * Actor é sempre obtido pela ação pública; este submicroflow não é exposto.
+ */
+create or modify microflow CampusFix.SUB_Pedido_Guardar (
+  $Formulario: CampusFix.FormularioPedido, $Actor: System.User
+) returns CampusFix.Pedido
+folder 'Regras/Pedidos'
+begin
+  $Utilizador = call microflow CampusFix.SUB_EhUtilizador(Actor = $Actor);
+  if not($Utilizador) then return empty; end if;
+  $Erro = call microflow CampusFix.SUB_Formulario_Validar(Formulario = $Formulario);
+  if $Erro != '' then return empty; end if;
+  retrieve $Categoria from $Formulario/CampusFix.Formulario_Categoria;
+  retrieve $Original from $Formulario/CampusFix.Formulario_Pedido;
+  if $Original = empty then
+    $Novo = create CampusFix.Pedido (
+      Titulo = trim($Formulario/Titulo), Descricao = trim($Formulario/Descricao),
+      Localizacao = trim($Formulario/Localizacao), Prioridade = $Formulario/Prioridade,
+      Estado = CampusFix.Estado.Novo, DataCriacao = [%CurrentDateTime%],
+      CriadorNome = $Actor/Name, Versao = 1,
+      CampusFix.Pedido_Categoria = $Categoria, CampusFix.Pedido_Criador = $Actor
+    );
+    commit $Novo refresh;
+    call microflow CampusFix.SUB_Historico_Registar(
+      Pedido = $Novo, Actor = $Actor, Anterior = empty, Novo = CampusFix.Estado.Novo);
+    return $Novo;
+  end if;
+  retrieve $Persistido from CampusFix.Pedido where [id = $Original] first;
+  if $Persistido = empty then return empty; end if;
+  if $Persistido/CampusFix.Pedido_Criador != $Actor then return empty; end if;
+  $Aberto = call microflow CampusFix.SUB_Pedido_Aberto(Pedido = $Persistido);
+  if not($Aberto) or $Persistido/Versao != $Formulario/VersaoOriginal then return empty; end if;
+  change $Persistido (
+    Titulo = trim($Formulario/Titulo), Descricao = trim($Formulario/Descricao),
+    Localizacao = trim($Formulario/Localizacao), Prioridade = $Formulario/Prioridade,
+    CampusFix.Pedido_Categoria = $Categoria, Versao = $Persistido/Versao + 1
+  ) commit refresh;
+  return $Persistido;
+end;
+
+/** MF02: técnico assume um pedido disponível e inicia análise. */
+create or modify microflow CampusFix.SUB_Pedido_Assumir (
+  $Pedido: CampusFix.Pedido, $Actor: System.User
+) returns Boolean
+folder 'Regras/Pedidos'
+begin
+  $Tecnico = call microflow CampusFix.SUB_TemPerfil(Actor = $Actor, Perfil = 'Tecnico');
+  if not($Tecnico) or $Pedido = empty then return false; end if;
+  retrieve $Persistido from CampusFix.Pedido where [id = $Pedido] first;
+  $Aberto = call microflow CampusFix.SUB_Pedido_Aberto(Pedido = $Persistido);
+  if not($Aberto) then return false; end if;
+  if $Persistido/CampusFix.Pedido_Tecnico != empty then return false; end if;
+  declare $Anterior Enumeration(CampusFix.Estado) = $Persistido/Estado;
+  change $Persistido (
+    CampusFix.Pedido_Tecnico = $Actor, TecnicoNome = $Actor/Name,
+    Estado = CampusFix.Estado.EmAnalise, Versao = $Persistido/Versao + 1
+  ) commit refresh;
+  call microflow CampusFix.SUB_Historico_Registar(
+    Pedido = $Persistido, Actor = $Actor, Anterior = $Anterior, Novo = CampusFix.Estado.EmAnalise);
+  return true;
+end;
+
+/** Transição explícita Em análise para Em tratamento pelo técnico atribuído. */
+create or modify microflow CampusFix.SUB_Pedido_IniciarTratamento (
+  $Pedido: CampusFix.Pedido, $Actor: System.User
+) returns Boolean
+folder 'Regras/Pedidos'
+begin
+  $Tecnico = call microflow CampusFix.SUB_TemPerfil(Actor = $Actor, Perfil = 'Tecnico');
+  if not($Tecnico) or $Pedido = empty then return false; end if;
+  retrieve $Persistido from CampusFix.Pedido where [id = $Pedido] first;
+  if $Persistido = empty then return false; end if;
+  if $Persistido/CampusFix.Pedido_Tecnico != $Actor
+    or $Persistido/Estado != CampusFix.Estado.EmAnalise then return false; end if;
+  change $Persistido (Estado = CampusFix.Estado.EmTratamento, Versao = $Persistido/Versao + 1) commit refresh;
+  call microflow CampusFix.SUB_Historico_Registar(Pedido = $Persistido, Actor = $Actor,
+    Anterior = CampusFix.Estado.EmAnalise, Novo = CampusFix.Estado.EmTratamento);
+  return true;
+end;
+
+/** MF04: comentário em pedido acessível e aberto, sem autor escolhido no cliente. */
+create or modify microflow CampusFix.SUB_Comentario_Registar (
+  $Formulario: CampusFix.FormularioComentario, $Actor: System.User
+) returns Boolean
+folder 'Regras/Comentarios'
+begin
+  if $Formulario = empty then return false; end if;
+  if trim($Formulario/Texto) = '' then return false; end if;
+  retrieve $Alvo from $Formulario/CampusFix.FormularioComentario_Pedido;
+  if $Alvo = empty then return false; end if;
+  retrieve $Persistido from CampusFix.Pedido where [id = $Alvo] first;
+  $Acesso = call microflow CampusFix.SUB_Pedido_PodeConsultar(Pedido = $Persistido, Actor = $Actor);
+  $Aberto = call microflow CampusFix.SUB_Pedido_Aberto(Pedido = $Persistido);
+  if not($Acesso) or not($Aberto) then return false; end if;
+  $Comentario = create CampusFix.Comentario (
+    Texto = trim($Formulario/Texto), DataComentario = [%CurrentDateTime%], AutorNome = $Actor/Name,
+    CampusFix.Comentario_Pedido = $Persistido, CampusFix.Comentario_Autor = $Actor
+  );
+  commit $Comentario refresh;
+  return true;
+end;
+
+/** MF03: resolução exige técnico atribuído, estado aberto e nota não vazia. */
+create or modify microflow CampusFix.SUB_Pedido_Concluir (
+  $Formulario: CampusFix.FormularioResolucao, $Actor: System.User
+) returns Boolean
+folder 'Regras/Pedidos'
+begin
+  $Tecnico = call microflow CampusFix.SUB_TemPerfil(Actor = $Actor, Perfil = 'Tecnico');
+  if not($Tecnico) or $Formulario = empty then return false; end if;
+  if trim($Formulario/Texto) = '' then return false; end if;
+  retrieve $Alvo from $Formulario/CampusFix.FormularioResolucao_Pedido;
+  if $Alvo = empty then return false; end if;
+  retrieve $Persistido from CampusFix.Pedido where [id = $Alvo] first;
+  if $Persistido = empty then return false; end if;
+  if $Persistido/CampusFix.Pedido_Tecnico != $Actor then return false; end if;
+  if $Persistido/Estado != CampusFix.Estado.EmAnalise
+    and $Persistido/Estado != CampusFix.Estado.EmTratamento then return false; end if;
+  declare $Anterior Enumeration(CampusFix.Estado) = $Persistido/Estado;
+  $Comentario = create CampusFix.Comentario (
+    Texto = 'Resolução: ' + trim($Formulario/Texto), DataComentario = [%CurrentDateTime%], AutorNome = $Actor/Name,
+    CampusFix.Comentario_Pedido = $Persistido, CampusFix.Comentario_Autor = $Actor
+  );
+  commit $Comentario;
+  change $Persistido (Estado = CampusFix.Estado.Resolvido,
+    DataConclusao = [%CurrentDateTime%], Versao = $Persistido/Versao + 1) commit refresh;
+  call microflow CampusFix.SUB_Historico_Registar(
+    Pedido = $Persistido, Actor = $Actor, Anterior = $Anterior, Novo = CampusFix.Estado.Resolvido);
+  return true;
+end;
+
+/** Regra adicional: cancelamento pelo autor; estados terminais são imutáveis. */
+create or modify microflow CampusFix.SUB_Pedido_Cancelar (
+  $Pedido: CampusFix.Pedido, $Actor: System.User
+) returns Boolean
+folder 'Regras/Pedidos'
+begin
+  $Utilizador = call microflow CampusFix.SUB_EhUtilizador(Actor = $Actor);
+  if not($Utilizador) or $Pedido = empty then return false; end if;
+  retrieve $Persistido from CampusFix.Pedido where [id = $Pedido] first;
+  $Aberto = call microflow CampusFix.SUB_Pedido_Aberto(Pedido = $Persistido);
+  if not($Aberto) then return false; end if;
+  if $Persistido/CampusFix.Pedido_Criador != $Actor then return false; end if;
+  declare $Anterior Enumeration(CampusFix.Estado) = $Persistido/Estado;
+  change $Persistido (Estado = CampusFix.Estado.Cancelado,
+    DataConclusao = empty, Versao = $Persistido/Versao + 1) commit refresh;
+  call microflow CampusFix.SUB_Historico_Registar(
+    Pedido = $Persistido, Actor = $Actor, Anterior = $Anterior, Novo = CampusFix.Estado.Cancelado);
+  return true;
+end;

@@ -1,0 +1,123 @@
+mdl 1;
+
+/** Gestão escolar de pedidos de suporte e manutenção. */
+create module if not exists CampusFix;
+
+/** Regista e acompanha os pedidos próprios. */
+create or modify module role CampusFix.Utilizador;
+/** Assume e trata pedidos de suporte. */
+create or modify module role CampusFix.Tecnico;
+/** Gere categorias e acessos e consulta todos os pedidos. */
+create or modify module role CampusFix.Administrador;
+
+/** Ciclo de vida; Resolvido e Cancelado são estados terminais. */
+create or modify enumeration CampusFix.Estado (
+  Novo 'Novo', EmAnalise 'Em análise', EmTratamento 'Em tratamento',
+  Resolvido 'Resolvido', Cancelado 'Cancelado'
+);
+/** Grau de urgência definido pelo requerente. */
+create or modify enumeration CampusFix.Prioridade (
+  Baixa 'Baixa', Media 'Média', Alta 'Alta', Urgente 'Urgente'
+);
+
+/** Catálogo administrável; desativação preserva pedidos históricos. */
+@position(80, 100)
+create or modify persistent entity CampusFix.Categoria (
+  Nome: String(100) not null error message 'Indica o nome da categoria.'
+    unique error message 'Já existe uma categoria com este nome.',
+  Descricao: String(1000),
+  Ativa: Boolean default true
+);
+
+/** Pedido persistido. Campos e associações são alterados apenas no servidor. */
+@position(420, 100)
+create or modify persistent entity CampusFix.Pedido (
+  Numero: AutoNumber default 1,
+  Titulo: String(150) not null error message 'Indica o título.',
+  Descricao: String(4000) not null error message 'Descreve o problema.',
+  Localizacao: String(150),
+  DataCriacao: DateTime,
+  DataConclusao: DateTime,
+  Estado: Enumeration(CampusFix.Estado) default Novo,
+  Prioridade: Enumeration(CampusFix.Prioridade) default Media,
+  CriadorNome: String(200),
+  TecnicoNome: String(200),
+  Versao: Long default 1
+)
+index (Estado, DataCriacao desc);
+
+/** Comentário imutável com identidade e data calculadas no servidor. */
+@position(790, 100)
+create or modify persistent entity CampusFix.Comentario (
+  Texto: String(2000),
+  DataComentario: DateTime,
+  AutorNome: String(200)
+)
+index (DataComentario);
+
+/** Rasto imutável das transições de estado. */
+@position(790, 360)
+create or modify persistent entity CampusFix.HistoricoEstado (
+  EstadoAnterior: Enumeration(CampusFix.Estado),
+  EstadoNovo: Enumeration(CampusFix.Estado),
+  DataAlteracao: DateTime,
+  AutorNome: String(200)
+);
+
+/** Rascunho de edição; não dá escrita direta sobre o pedido persistido. */
+@position(80, 420)
+create or modify non-persistent entity CampusFix.FormularioPedido (
+  Titulo: String(150), Descricao: String(4000), Localizacao: String(150),
+  Prioridade: Enumeration(CampusFix.Prioridade) default Media,
+  VersaoOriginal: Long default 0
+);
+/** Rascunho para um comentário num pedido aberto. */
+@position(420, 470)
+create or modify non-persistent entity CampusFix.FormularioComentario (
+  Texto: String(2000)
+);
+/** Nota de resolução obrigatória ao concluir. */
+@position(790, 590)
+create or modify non-persistent entity CampusFix.FormularioResolucao (
+  Texto: String(2000)
+);
+/** Indicadores calculados apenas sobre os pedidos acessíveis. */
+@position(80, 700)
+create or modify non-persistent entity CampusFix.ResumoDashboard (
+  Novos: Integer, EmAnalise: Integer, EmTratamento: Integer,
+  Resolvidos: Integer, Cancelados: Integer
+);
+
+/** Cada pedido tem uma categoria. */
+create or modify association CampusFix.Pedido_Categoria
+from CampusFix.Pedido to CampusFix.Categoria type Reference;
+/** Autor do pedido; associação a System.User aceita Administration.Account. */
+create or modify association CampusFix.Pedido_Criador
+from CampusFix.Pedido to System.User type Reference;
+/** Técnico responsável, inicialmente vazio. */
+create or modify association CampusFix.Pedido_Tecnico
+from CampusFix.Pedido to System.User type Reference;
+/** Comentários pertencem a um único pedido. */
+create or modify association CampusFix.Comentario_Pedido
+from CampusFix.Comentario to CampusFix.Pedido type Reference;
+/** Identidade de quem comentou. */
+create or modify association CampusFix.Comentario_Autor
+from CampusFix.Comentario to System.User type Reference;
+/** Histórico associado ao pedido. */
+create or modify association CampusFix.Historico_Pedido
+from CampusFix.HistoricoEstado to CampusFix.Pedido type Reference;
+/** Identidade do autor de cada transição. */
+create or modify association CampusFix.Historico_Autor
+from CampusFix.HistoricoEstado to System.User type Reference;
+/** Pedido original de uma edição; vazio numa criação. */
+create or modify association CampusFix.Formulario_Pedido
+from CampusFix.FormularioPedido to CampusFix.Pedido type Reference;
+/** Categoria selecionada no rascunho. */
+create or modify association CampusFix.Formulario_Categoria
+from CampusFix.FormularioPedido to CampusFix.Categoria type Reference;
+/** Pedido de destino do rascunho de comentário. */
+create or modify association CampusFix.FormularioComentario_Pedido
+from CampusFix.FormularioComentario to CampusFix.Pedido type Reference;
+/** Pedido de destino da nota de resolução. */
+create or modify association CampusFix.FormularioResolucao_Pedido
+from CampusFix.FormularioResolucao to CampusFix.Pedido type Reference;
