@@ -13,10 +13,10 @@ create or modify microflow CampusFixTest.CriarFixture () returns CampusFixTest.F
 begin
   retrieve $RoleU from System.UserRole where [Name = 'Utilizador'];
   retrieve $RoleT from System.UserRole where [Name = 'Tecnico'];
-  $A = create Administration.Account (Name = 'campusfix_teste_a', FullName = 'Utilizador A', Active = true, System.UserRoles = $RoleU);
-  $B = create Administration.Account (Name = 'campusfix_teste_b', FullName = 'Utilizador B', Active = true, System.UserRoles = $RoleU);
-  $T1 = create Administration.Account (Name = 'campusfix_teste_t1', FullName = 'Técnico A', Active = true, System.UserRoles = $RoleT);
-  $T2 = create Administration.Account (Name = 'campusfix_teste_t2', FullName = 'Técnico B', Active = true, System.UserRoles = $RoleT);
+  $A = create Administration.Account (Name = 'campusfix_teste_a', FullName = 'Utilizador A', Active = true, Password = 'CampusFix.Test!2026', System.UserRoles = $RoleU);
+  $B = create Administration.Account (Name = 'campusfix_teste_b', FullName = 'Utilizador B', Active = true, Password = 'CampusFix.Test!2026', System.UserRoles = $RoleU);
+  $T1 = create Administration.Account (Name = 'campusfix_teste_t1', FullName = 'Técnico A', Active = true, Password = 'CampusFix.Test!2026', System.UserRoles = $RoleT);
+  $T2 = create Administration.Account (Name = 'campusfix_teste_t2', FullName = 'Técnico B', Active = true, Password = 'CampusFix.Test!2026', System.UserRoles = $RoleT);
   commit $A; commit $B; commit $T1; commit $T2;
   $Categoria = create CampusFix.Categoria (Nome = 'Categoria de teste', Ativa = true);
   commit $Categoria;
