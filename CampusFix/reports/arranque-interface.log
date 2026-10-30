@@ -7,14 +7,14 @@ Ensuring MxBuild and runtime are available...
 Starting mxbuild --serve...
 Building (first build is cold, ~10-15s)...
 Bundling web client...
-  Web client bundled in 6.888s
+  Web client bundled in 6.55s
 Scheduled events: ALL (0 defined) — override with --runtime-setting ScheduledEventExecution=NONE
 Runtime started; app serving at http://127.0.0.1:8080/
 
 App is running at http://127.0.0.1:8080/
-Query data:  mxcli oql -p /home/runner/work/_temp/campusfix-ui-app-JVf2sD/CampusFix.mpr "SELECT ..."
-Log levels:  mxcli log list -p /home/runner/work/_temp/campusfix-ui-app-JVf2sD/CampusFix.mpr
-Runtime log: /home/runner/work/_temp/campusfix-ui-app-JVf2sD/.mxcli/runtime.log
+Query data:  mxcli oql -p /home/runner/work/_temp/campusfix-ui-app-Nk6cWV/CampusFix.mpr "SELECT ..."
+Log levels:  mxcli log list -p /home/runner/work/_temp/campusfix-ui-app-Nk6cWV/CampusFix.mpr
+Runtime log: /home/runner/work/_temp/campusfix-ui-app-Nk6cWV/.mxcli/runtime.log
 (run with --watch to rebuild and hot-apply on changes; Ctrl-C to stop)
 
 Shutting down...

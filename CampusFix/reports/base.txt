@@ -33,8 +33,15 @@ mdl 1;
 -- navigation PROFILE: Responsive
 --   Kind: Responsive
 create or modify navigation Responsive
-  home page MyFirstModule.Home_Web
+  home page CampusFix.Dashboard
 {
-  menu item 'Home' ( OnClick: show page MyFirstModule.Home_Web with (DisabledDuringExecution: false), Icon: glyph 57377 )
+  menu item 'Painel inicial' ( OnClick: show page CampusFix.Dashboard )
+  menu item 'Os meus pedidos' ( OnClick: show page CampusFix.Pedido_Meus )
+  menu item 'Novo pedido' ( OnClick: call microflow CampusFix.ACT_Pedido_Novo )
+  menu item 'Área do técnico' ( OnClick: show page CampusFix.Pedido_Gestao )
+  menu item 'Todos os pedidos' ( OnClick: show page CampusFix.Pedido_Todos )
+  menu item 'Categorias' ( OnClick: show page CampusFix.Categoria_Overview )
+  menu item 'Utilizadores e perfis' ( OnClick: show page Administration.Account_Overview )
+  menu item 'Terminar sessão' ( OnClick: sign out )
 };
 

@@ -1,77 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-  <testsuite name="regras" tests="16" failures="0" errors="0" skipped="0" time="18.867">
-    <testcase name="RF02 criação com autor data e estado automáticos" classname="tests.regras" file="tests/regras.test.mdl" time="1.403">
+  <testsuite name="regras" tests="16" failures="0" errors="0" skipped="0" time="20.935">
+    <testcase name="RF02 criação com autor data e estado automáticos" classname="tests.regras" file="tests/regras.test.mdl" time="1.559">
       <properties>
         <property name="assertions" value="5"></property>
       </properties>
     </testcase>
-    <testcase name="RF03 outro utilizador não pode consultar o pedido" classname="tests.regras" file="tests/regras.test.mdl" time="1.270">
+    <testcase name="RF03 outro utilizador não pode consultar o pedido" classname="tests.regras" file="tests/regras.test.mdl" time="1.413">
       <properties>
         <property name="assertions" value="1"></property>
       </properties>
     </testcase>
-    <testcase name="RF05 utilizador comum não pode assumir pedido" classname="tests.regras" file="tests/regras.test.mdl" time="1.261">
+    <testcase name="RF05 utilizador comum não pode assumir pedido" classname="tests.regras" file="tests/regras.test.mdl" time="1.388">
       <properties>
         <property name="assertions" value="2"></property>
       </properties>
     </testcase>
-    <testcase name="RF05 técnico assume e o segundo técnico não substitui" classname="tests.regras" file="tests/regras.test.mdl" time="1.258">
+    <testcase name="RF05 técnico assume e o segundo técnico não substitui" classname="tests.regras" file="tests/regras.test.mdl" time="1.404">
       <properties>
         <property name="assertions" value="4"></property>
       </properties>
     </testcase>
-    <testcase name="RF05 só o técnico atribuído inicia tratamento" classname="tests.regras" file="tests/regras.test.mdl" time="1.257">
+    <testcase name="RF05 só o técnico atribuído inicia tratamento" classname="tests.regras" file="tests/regras.test.mdl" time="1.384">
       <properties>
         <property name="assertions" value="4"></property>
       </properties>
     </testcase>
-    <testcase name="RF07 concluir regista data nota e não repete a conclusão" classname="tests.regras" file="tests/regras.test.mdl" time="1.297">
+    <testcase name="RF07 concluir regista data nota e não repete a conclusão" classname="tests.regras" file="tests/regras.test.mdl" time="1.392">
       <properties>
         <property name="assertions" value="5"></property>
       </properties>
     </testcase>
-    <testcase name="RF07 impede conclusão sem nota de resolução" classname="tests.regras" file="tests/regras.test.mdl" time="1.237">
+    <testcase name="RF07 impede conclusão sem nota de resolução" classname="tests.regras" file="tests/regras.test.mdl" time="1.365">
       <properties>
         <property name="assertions" value="2"></property>
       </properties>
     </testcase>
-    <testcase name="RF04 não edita pedido resolvido" classname="tests.regras" file="tests/regras.test.mdl" time="1.256">
+    <testcase name="RF04 não edita pedido resolvido" classname="tests.regras" file="tests/regras.test.mdl" time="1.387">
       <properties>
         <property name="assertions" value="3"></property>
       </properties>
     </testcase>
-    <testcase name="RF04 não edita pedido de outro autor" classname="tests.regras" file="tests/regras.test.mdl" time="1.227">
+    <testcase name="RF04 não edita pedido de outro autor" classname="tests.regras" file="tests/regras.test.mdl" time="1.373">
       <properties>
         <property name="assertions" value="1"></property>
       </properties>
     </testcase>
-    <testcase name="RF04 edição válida mantém autor e data de criação" classname="tests.regras" file="tests/regras.test.mdl" time="1.232">
+    <testcase name="RF04 edição válida mantém autor e data de criação" classname="tests.regras" file="tests/regras.test.mdl" time="1.389">
       <properties>
         <property name="assertions" value="4"></property>
       </properties>
     </testcase>
-    <testcase name="RF06 comentário guarda pedido autor e data certos" classname="tests.regras" file="tests/regras.test.mdl" time="1.230">
+    <testcase name="RF06 comentário guarda pedido autor e data certos" classname="tests.regras" file="tests/regras.test.mdl" time="1.385">
       <properties>
         <property name="assertions" value="4"></property>
       </properties>
     </testcase>
-    <testcase name="RF06 rejeita comentário de outro utilizador" classname="tests.regras" file="tests/regras.test.mdl" time="1.227">
+    <testcase name="RF06 rejeita comentário de outro utilizador" classname="tests.regras" file="tests/regras.test.mdl" time="1.391">
       <properties>
         <property name="assertions" value="2"></property>
       </properties>
     </testcase>
-    <testcase name="RF08 categoria inativa não aceita novos pedidos" classname="tests.regras" file="tests/regras.test.mdl" time="1.218">
+    <testcase name="RF08 categoria inativa não aceita novos pedidos" classname="tests.regras" file="tests/regras.test.mdl" time="1.358">
       <properties>
         <property name="assertions" value="1"></property>
       </properties>
     </testcase>
-    <testcase name="Extra cancelamento exclusivo do autor e estado terminal" classname="tests.regras" file="tests/regras.test.mdl" time="1.225">
+    <testcase name="Extra cancelamento exclusivo do autor e estado terminal" classname="tests.regras" file="tests/regras.test.mdl" time="1.358">
       <properties>
         <property name="assertions" value="5"></property>
       </properties>
     </testcase>
-    <testcase name="Extra edição desatualizada é recusada" classname="tests.regras" file="tests/regras.test.mdl" time="1.238">
+    <testcase name="Extra edição desatualizada é recusada" classname="tests.regras" file="tests/regras.test.mdl" time="1.356">
       <properties>
         <property name="assertions" value="1"></property>
       </properties>
