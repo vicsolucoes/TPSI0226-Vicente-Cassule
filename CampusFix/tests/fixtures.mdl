@@ -1,0 +1,27 @@
+mdl 1;
+/** Módulo temporário de fixtures. A CI remove-o antes de versionar o projecto. */
+create module if not exists CampusFixTest;
+create or modify non-persistent entity CampusFixTest.Fixture (Label: String(20));
+create or modify association CampusFixTest.Fixture_Pedido from CampusFixTest.Fixture to CampusFix.Pedido type Reference;
+create or modify association CampusFixTest.Fixture_A from CampusFixTest.Fixture to System.User type Reference;
+create or modify association CampusFixTest.Fixture_B from CampusFixTest.Fixture to System.User type Reference;
+create or modify association CampusFixTest.Fixture_T1 from CampusFixTest.Fixture to System.User type Reference;
+create or modify association CampusFixTest.Fixture_T2 from CampusFixTest.Fixture to System.User type Reference;
+create or modify association CampusFixTest.Fixture_Categoria from CampusFixTest.Fixture to CampusFix.Categoria type Reference;
+/** Dados descartáveis; não cria sessões nem usa contas pessoais. */
+create or modify microflow CampusFixTest.CriarFixture () returns CampusFixTest.Fixture
+begin
+  retrieve $RoleU from System.UserRole where [Name = 'Utilizador'];
+  retrieve $RoleT from System.UserRole where [Name = 'Tecnico'];
+  $A = create Administration.Account (Name = 'campusfix_teste_a', FullName = 'Utilizador A', Active = true, System.UserRoles = $RoleU);
+  $B = create Administration.Account (Name = 'campusfix_teste_b', FullName = 'Utilizador B', Active = true, System.UserRoles = $RoleU);
+  $T1 = create Administration.Account (Name = 'campusfix_teste_t1', FullName = 'Técnico A', Active = true, System.UserRoles = $RoleT);
+  $T2 = create Administration.Account (Name = 'campusfix_teste_t2', FullName = 'Técnico B', Active = true, System.UserRoles = $RoleT);
+  commit $A; commit $B; commit $T1; commit $T2;
+  $Categoria = create CampusFix.Categoria (Nome = 'Categoria de teste', Ativa = true);
+  commit $Categoria;
+  $Form = create CampusFix.FormularioPedido (Titulo = 'Computador não liga', Descricao = 'O computador da sala 12 não inicia.', Prioridade = CampusFix.Prioridade.Alta, CampusFix.Formulario_Categoria = $Categoria);
+  $Pedido = call microflow CampusFix.SUB_Pedido_Guardar(Formulario = $Form, Actor = $A);
+  $Fixture = create CampusFixTest.Fixture (Label = 'Teste', CampusFixTest.Fixture_Pedido = $Pedido, CampusFixTest.Fixture_A = $A, CampusFixTest.Fixture_B = $B, CampusFixTest.Fixture_T1 = $T1, CampusFixTest.Fixture_T2 = $T2, CampusFixTest.Fixture_Categoria = $Categoria);
+  return $Fixture;
+end;

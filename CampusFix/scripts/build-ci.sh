@@ -18,5 +18,11 @@ fi
 "$MXCLI" -p "$MPR" -c 'list modules; list microflows in CampusFix; list pages in CampusFix; describe security matrix in CampusFix' > reports/modelo.txt
 "$MXCLI" lint -p "$MPR" --exclude System --exclude Administration --exclude Atlas_Core --exclude Atlas_Web_Content --exclude Atlas_Web_Layouts --exclude DataWidgets --exclude FeedbackModule --exclude NanoflowCommons > reports/lint.txt 2>&1 || true
 if [ -f tests/regras.test.mdl ]; then
-  "$MXCLI" test tests/ -p "$MPR" --local --db-type hsqldb --junit reports/testes.xml 2>&1 | tee reports/testes.log
+  "$MXCLI" exec tests/fixtures.mdl -p "$MPR"
+  set +e
+  "$MXCLI" test tests/regras.test.mdl -p "$MPR" --local --db-type hsqldb --junit reports/testes.xml 2>&1 | tee reports/testes.log
+  TEST_STATUS=${PIPESTATUS[0]}
+  set -e
+  "$MXCLI" -p "$MPR" -c 'drop module CampusFixTest;'
+  if [ "$TEST_STATUS" -ne 0 ]; then exit "$TEST_STATUS"; fi
 fi
