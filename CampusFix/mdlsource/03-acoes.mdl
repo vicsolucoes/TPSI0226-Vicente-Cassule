@@ -1,0 +1,198 @@
+mdl 1;
+
+/** Resolve a identidade da sessão; nunca é um parâmetro enviado pelo cliente. */
+create or modify microflow CampusFix.SUB_ActorActual ()
+returns System.User folder 'Regras/Seguranca'
+begin
+  retrieve $Actor from System.User where [id = '[%CurrentUser%]'] first;
+  return $Actor;
+end;
+
+/** Inicia o formulário sem criar um pedido persistido incompleto. */
+create or modify microflow CampusFix.ACT_Pedido_Novo ()
+returns Boolean folder 'Acoes/Pedidos'
+begin
+  $Actor = call microflow CampusFix.SUB_ActorActual();
+  $Permitido = call microflow CampusFix.SUB_EhUtilizador(Actor = $Actor);
+  if not($Permitido) then return false; end if;
+  $Formulario = create CampusFix.FormularioPedido (Prioridade = CampusFix.Prioridade.Media);
+  show page CampusFix.Pedido_Formulario(Formulario = $Formulario);
+  return true;
+end;
+
+/** Carrega um rascunho só para o proprietário de um pedido aberto. */
+create or modify microflow CampusFix.ACT_Pedido_Editar ($Pedido: CampusFix.Pedido)
+returns Boolean folder 'Acoes/Pedidos'
+begin
+  $Actor = call microflow CampusFix.SUB_ActorActual();
+  $Utilizador = call microflow CampusFix.SUB_EhUtilizador(Actor = $Actor);
+  if not($Utilizador) or $Pedido = empty then return false; end if;
+  retrieve $Persistido from CampusFix.Pedido where [id = $Pedido] first;
+  $Aberto = call microflow CampusFix.SUB_Pedido_Aberto(Pedido = $Persistido);
+  if not($Aberto) then
+    show message 'Este pedido já está encerrado.' type Warning;
+    return false;
+  end if;
+  if $Persistido/CampusFix.Pedido_Criador != $Actor then return false; end if;
+  retrieve $Categoria from $Persistido/CampusFix.Pedido_Categoria;
+  $Formulario = create CampusFix.FormularioPedido (
+    Titulo = $Persistido/Titulo, Descricao = $Persistido/Descricao,
+    Localizacao = $Persistido/Localizacao, Prioridade = $Persistido/Prioridade,
+    VersaoOriginal = $Persistido/Versao, CampusFix.Formulario_Pedido = $Persistido,
+    CampusFix.Formulario_Categoria = $Categoria
+  );
+  show page CampusFix.Pedido_Formulario(Formulario = $Formulario);
+  return true;
+end;
+
+/** MF01 público: validação de interface e delegação da persistência autorizada. */
+create or modify microflow CampusFix.ACT_Pedido_Guardar ($Formulario: CampusFix.FormularioPedido)
+returns Boolean folder 'Acoes/Pedidos'
+begin
+  $Erro = call microflow CampusFix.SUB_Formulario_Validar(Formulario = $Formulario);
+  if $Erro != '' then show message $Erro type Warning; return false; end if;
+  $Actor = call microflow CampusFix.SUB_ActorActual();
+  $Pedido = call microflow CampusFix.SUB_Pedido_Guardar(Formulario = $Formulario, Actor = $Actor);
+  if $Pedido = empty then
+    show message 'Não foi possível guardar. Confirma a permissão e volta a abrir o pedido: pode ter sido alterado ou encerrado.' type Warning;
+    return false;
+  end if;
+  close page;
+  show page CampusFix.Pedido_Detalhe(Pedido = $Pedido);
+  return true;
+end;
+
+/** MF02 público: só passa para a regra o técnico autenticado. */
+create or modify microflow CampusFix.ACT_Pedido_Assumir ($Pedido: CampusFix.Pedido)
+returns Boolean folder 'Acoes/Tecnico'
+begin
+  $Actor = call microflow CampusFix.SUB_ActorActual();
+  $Sucesso = call microflow CampusFix.SUB_Pedido_Assumir(Pedido = $Pedido, Actor = $Actor);
+  if not($Sucesso) then
+    show message 'O pedido já foi assumido ou não está disponível para ti.' type Warning;
+  end if;
+  return $Sucesso;
+end;
+
+/** Inicia o tratamento apenas após análise e atribuição ao técnico atual. */
+create or modify microflow CampusFix.ACT_Pedido_IniciarTratamento ($Pedido: CampusFix.Pedido)
+returns Boolean folder 'Acoes/Tecnico'
+begin
+  $Actor = call microflow CampusFix.SUB_ActorActual();
+  $Sucesso = call microflow CampusFix.SUB_Pedido_IniciarTratamento(Pedido = $Pedido, Actor = $Actor);
+  if not($Sucesso) then show message 'Esta transição não é permitida.' type Warning; end if;
+  return $Sucesso;
+end;
+
+/** Abre a nota de resolução para o técnico atribuído a um pedido aberto. */
+create or modify microflow CampusFix.ACT_Pedido_PrepararConclusao ($Pedido: CampusFix.Pedido)
+returns Boolean folder 'Acoes/Tecnico'
+begin
+  $Actor = call microflow CampusFix.SUB_ActorActual();
+  $Tecnico = call microflow CampusFix.SUB_TemPerfil(Actor = $Actor, Perfil = 'Tecnico');
+  if not($Tecnico) or $Pedido = empty then return false; end if;
+  retrieve $Persistido from CampusFix.Pedido where [id = $Pedido] first;
+  $Aberto = call microflow CampusFix.SUB_Pedido_Aberto(Pedido = $Persistido);
+  if not($Aberto) then return false; end if;
+  if $Persistido/CampusFix.Pedido_Tecnico != $Actor then return false; end if;
+  $Formulario = create CampusFix.FormularioResolucao (
+    CampusFix.FormularioResolucao_Pedido = $Persistido);
+  show page CampusFix.Pedido_Concluir(Formulario = $Formulario);
+  return true;
+end;
+
+/** MF03 público: conclui e fecha o formulário só se a regra for satisfeita. */
+create or modify microflow CampusFix.ACT_Pedido_Concluir ($Formulario: CampusFix.FormularioResolucao)
+returns Boolean folder 'Acoes/Tecnico'
+begin
+  $Actor = call microflow CampusFix.SUB_ActorActual();
+  $Sucesso = call microflow CampusFix.SUB_Pedido_Concluir(Formulario = $Formulario, Actor = $Actor);
+  if $Sucesso then close page;
+  else show message 'Regista uma nota de resolução. Só o técnico responsável pode concluir um pedido em análise ou tratamento.' type Warning;
+  end if;
+  return $Sucesso;
+end;
+
+/** Prepara comentário sem expor autor, data ou pedido de destino como editáveis. */
+create or modify microflow CampusFix.ACT_Comentario_Novo ($Pedido: CampusFix.Pedido)
+returns Boolean folder 'Acoes/Comentarios'
+begin
+  $Actor = call microflow CampusFix.SUB_ActorActual();
+  if $Pedido = empty then return false; end if;
+  retrieve $Persistido from CampusFix.Pedido where [id = $Pedido] first;
+  $Acesso = call microflow CampusFix.SUB_Pedido_PodeConsultar(Pedido = $Persistido, Actor = $Actor);
+  $Aberto = call microflow CampusFix.SUB_Pedido_Aberto(Pedido = $Persistido);
+  if not($Acesso) or not($Aberto) then return false; end if;
+  $Formulario = create CampusFix.FormularioComentario (
+    CampusFix.FormularioComentario_Pedido = $Persistido);
+  show page CampusFix.Comentario_Formulario(Formulario = $Formulario);
+  return true;
+end;
+
+/** MF04 público: regista comentário validado e preserva o formulário se falhar. */
+create or modify microflow CampusFix.ACT_Comentario_Registar ($Formulario: CampusFix.FormularioComentario)
+returns Boolean folder 'Acoes/Comentarios'
+begin
+  $Actor = call microflow CampusFix.SUB_ActorActual();
+  $Sucesso = call microflow CampusFix.SUB_Comentario_Registar(Formulario = $Formulario, Actor = $Actor);
+  if $Sucesso then close page;
+  else show message 'Escreve um comentário num pedido aberto ao qual tenhas acesso.' type Warning;
+  end if;
+  return $Sucesso;
+end;
+
+/** Cancelamento explícito, apenas pelo proprietário e enquanto aberto. */
+create or modify microflow CampusFix.ACT_Pedido_Cancelar ($Pedido: CampusFix.Pedido)
+returns Boolean folder 'Acoes/Pedidos'
+begin
+  $Actor = call microflow CampusFix.SUB_ActorActual();
+  $Sucesso = call microflow CampusFix.SUB_Pedido_Cancelar(Pedido = $Pedido, Actor = $Actor);
+  if not($Sucesso) then show message 'Já não podes cancelar este pedido.' type Warning; end if;
+  return $Sucesso;
+end;
+
+/** Indicadores respeitam Entity Access: nunca devolvem totais de outros autores. */
+@applyentityaccess
+create or modify microflow CampusFix.DS_Resumo ()
+returns CampusFix.ResumoDashboard folder 'Dashboard'
+begin
+  retrieve $Visiveis from CampusFix.Pedido;
+  $Novos = filter $Visiveis by Estado = CampusFix.Estado.Novo;
+  $Analise = filter $Visiveis by Estado = CampusFix.Estado.EmAnalise;
+  $Tratamento = filter $Visiveis by Estado = CampusFix.Estado.EmTratamento;
+  $Resolvidos = filter $Visiveis by Estado = CampusFix.Estado.Resolvido;
+  $Cancelados = filter $Visiveis by Estado = CampusFix.Estado.Cancelado;
+  $N1 = count $Novos; $N2 = count $Analise; $N3 = count $Tratamento;
+  $N4 = count $Resolvidos; $N5 = count $Cancelados;
+  $Resumo = create CampusFix.ResumoDashboard (
+    Novos = $N1, EmAnalise = $N2, EmTratamento = $N3, Resolvidos = $N4, Cancelados = $N5);
+  return $Resumo;
+end;
+
+/** Apenas administradores criam categorias. */
+create or modify microflow CampusFix.ACT_Categoria_Nova ()
+returns Boolean folder 'Acoes/Administracao'
+begin
+  $Actor = call microflow CampusFix.SUB_ActorActual();
+  $Admin = call microflow CampusFix.SUB_TemPerfil(Actor = $Actor, Perfil = 'Administrator');
+  if not($Admin) then return false; end if;
+  $Categoria = create CampusFix.Categoria (Ativa = true);
+  show page CampusFix.Categoria_Formulario(Categoria = $Categoria);
+  return true;
+end;
+
+/** Normaliza nome e guarda; validações de entidade protegem nomes vazios/duplicados. */
+create or modify microflow CampusFix.ACT_Categoria_Guardar ($Categoria: CampusFix.Categoria)
+returns Boolean folder 'Acoes/Administracao'
+begin
+  $Actor = call microflow CampusFix.SUB_ActorActual();
+  $Admin = call microflow CampusFix.SUB_TemPerfil(Actor = $Actor, Perfil = 'Administrator');
+  if not($Admin) or $Categoria = empty then return false; end if;
+  if trim($Categoria/Nome) = '' then
+    validation feedback $Categoria/Nome message 'Indica o nome da categoria.';
+    return false;
+  end if;
+  change $Categoria (Nome = trim($Categoria/Nome)) commit refresh;
+  close page;
+  return true;
+end;

@@ -1,0 +1,235 @@
+mdl 1;
+
+/** Entrada com indicadores filtrados pelas permissões do utilizador autenticado. */
+create or modify page CampusFix.Dashboard (
+  Title: 'CampusFix · Painel inicial', Layout: MyFirstModule.App_Default,
+  Url: 'campusfix', Class: 'cf-page'
+) {
+  container cabecalho (Class: 'cf-hero') {
+    dynamictext marca (Content: 'CAMPUSFIX', RenderMode: H1)
+    dynamictext descricao (Content: 'Suporte e manutenção, com acompanhamento em cada etapa.')
+    actionbutton novo (Caption: 'Criar pedido', Action: call microflow CampusFix.ACT_Pedido_Novo, ButtonStyle: primary)
+  }
+  dataview resumo (DataSource: microflow CampusFix.DS_Resumo) {
+    layoutgrid indicadores {
+      row {
+        column (DesktopWidth: 3) {
+          container novos (Class: 'card cf-kpi') {
+            dynamictext n1 (Attribute: Novos, RenderMode: H1)
+            dynamictext l1 (Content: 'Novos pedidos')
+          }
+        }
+        column (DesktopWidth: 3) {
+          container analise (Class: 'card cf-kpi') {
+            dynamictext n2 (Attribute: EmAnalise, RenderMode: H1)
+            dynamictext l2 (Content: 'Em análise')
+          }
+        }
+        column (DesktopWidth: 3) {
+          container tratamento (Class: 'card cf-kpi') {
+            dynamictext n3 (Attribute: EmTratamento, RenderMode: H1)
+            dynamictext l3 (Content: 'Em tratamento')
+          }
+        }
+        column (DesktopWidth: 3) {
+          container resolvidos (Class: 'card cf-kpi cf-kpi-success') {
+            dynamictext n4 (Attribute: Resolvidos, RenderMode: H1)
+            dynamictext l4 (Content: 'Resolvidos')
+          }
+        }
+      }
+    }
+  }
+  container atalhos (Class: 'card cf-actions') {
+    dynamictext titulo (Content: 'Acessos rápidos', RenderMode: H3)
+    actionbutton meus (Caption: 'Os meus pedidos', Action: show page CampusFix.Pedido_Meus)
+    actionbutton tecnico (Caption: 'Área do técnico', Action: show page CampusFix.Pedido_Gestao)
+    actionbutton todos (Caption: 'Todos os pedidos', Action: show page CampusFix.Pedido_Todos)
+    actionbutton categorias (Caption: 'Categorias', Action: show page CampusFix.Categoria_Overview)
+    actionbutton utilizadores (Caption: 'Utilizadores e perfis', Action: show page Administration.Account_Overview)
+  }
+};
+
+/** Pedidos do próprio autor com filtros e ação de detalhe. */
+create or modify page CampusFix.Pedido_Meus (
+  Title: 'Os meus pedidos', Layout: MyFirstModule.App_Default, Url: 'meus-pedidos', Class: 'cf-page'
+) {
+  dynamictext heading (Content: 'Os meus pedidos', RenderMode: H1)
+  dynamictext texto (Content: 'Consulta a evolução dos teus pedidos e acrescenta informação enquanto estiverem abertos.')
+  actionbutton novo (Caption: 'Criar pedido', Action: call microflow CampusFix.ACT_Pedido_Novo, ButtonStyle: primary)
+  datagrid pedidos (DataSource: database CampusFix.Pedido where [CampusFix.Pedido_Criador = '[%CurrentUser%]'] sort by DataCriacao desc, PageSize: 15) {
+    column (Attribute: Numero, Caption: 'N.º')
+    column (Attribute: Titulo, Caption: 'Título') { textfilter procurar }
+    column (Attribute: Estado, Caption: 'Estado') { dropdownfilter estado }
+    column (Attribute: Prioridade, Caption: 'Prioridade') { dropdownfilter prioridade }
+    column (Attribute: Pedido_Categoria/Nome, Caption: 'Categoria')
+    column (Caption: 'Detalhe') {
+      actionbutton abrir (Caption: 'Abrir', Action: show page CampusFix.Pedido_Detalhe(Pedido = $currentObject))
+    }
+  }
+};
+
+/** Fila de trabalho: Entity Access limita aos pedidos disponíveis ou atribuídos. */
+create or modify page CampusFix.Pedido_Gestao (
+  Title: 'Área do técnico', Layout: MyFirstModule.App_Default, Url: 'gestao-pedidos', Class: 'cf-page'
+) {
+  dynamictext heading (Content: 'Área do técnico', RenderMode: H1)
+  dynamictext texto (Content: 'Assume um pedido disponível. Depois de atribuído, só o técnico responsável pode tratá-lo e concluí-lo.')
+  datagrid pedidos (DataSource: database CampusFix.Pedido sort by DataCriacao desc, PageSize: 15) {
+    column (Attribute: Numero, Caption: 'N.º')
+    column (Attribute: Titulo, Caption: 'Título') { textfilter procurar }
+    column (Attribute: Estado, Caption: 'Estado') { dropdownfilter estado }
+    column (Attribute: Prioridade, Caption: 'Prioridade') { dropdownfilter prioridade }
+    column (Attribute: TecnicoNome, Caption: 'Técnico')
+    column (Caption: 'Ações') {
+      actionbutton abrir (Caption: 'Abrir', Action: show page CampusFix.Pedido_Detalhe(Pedido = $currentObject))
+      actionbutton assumir (Caption: 'Assumir', Action: call microflow CampusFix.ACT_Pedido_Assumir(Pedido = $currentObject),
+        Visible: $currentObject/CampusFix.Pedido_Tecnico = empty and $currentObject/Estado != CampusFix.Estado.Resolvido and $currentObject/Estado != CampusFix.Estado.Cancelado)
+    }
+  }
+};
+
+/** Vista administrativa de todos os pedidos, pesquisável e sem edição direta. */
+create or modify page CampusFix.Pedido_Todos (
+  Title: 'Todos os pedidos', Layout: MyFirstModule.App_Default, Url: 'todos-pedidos', Class: 'cf-page'
+) {
+  dynamictext heading (Content: 'Todos os pedidos', RenderMode: H1)
+  datagrid pedidos (DataSource: database CampusFix.Pedido sort by DataCriacao desc, PageSize: 20) {
+    column (Attribute: Numero, Caption: 'N.º')
+    column (Attribute: Titulo, Caption: 'Título') { textfilter procurar }
+    column (Attribute: CriadorNome, Caption: 'Requerente')
+    column (Attribute: Estado, Caption: 'Estado') { dropdownfilter estado }
+    column (Attribute: Prioridade, Caption: 'Prioridade') { dropdownfilter prioridade }
+    column (Attribute: Pedido_Categoria/Nome, Caption: 'Categoria')
+    column (Caption: 'Detalhe') {
+      actionbutton abrir (Caption: 'Abrir', Action: show page CampusFix.Pedido_Detalhe(Pedido = $currentObject))
+    }
+  }
+};
+
+/** Rascunho para criar ou editar campos permitidos do pedido. */
+create or modify page CampusFix.Pedido_Formulario (
+  Params: ($Formulario: CampusFix.FormularioPedido),
+  Title: 'Registar / editar pedido', Layout: MyFirstModule.App_Default, Class: 'cf-page'
+) {
+  dynamictext heading (Content: 'O teu pedido', RenderMode: H1)
+  dataview formulario (DataSource: $Formulario, FormOrientation: Vertical) {
+    textbox titulo (Label: 'Título', Attribute: Titulo)
+    textarea descricao (Label: 'Descreve o problema', Attribute: Descricao)
+    textbox localizacao (Label: 'Edifício / sala (opcional)', Attribute: Localizacao)
+    combobox categoria (Label: 'Categoria', Association: Formulario_Categoria,
+      DataSource: database CampusFix.Categoria where [Ativa = true] sort by Nome asc, CaptionAttribute: Nome)
+    combobox prioridade (Label: 'Prioridade', Attribute: Prioridade)
+    footer {
+      actionbutton guardar (Caption: 'Guardar pedido', Action: call microflow CampusFix.ACT_Pedido_Guardar(Formulario = $Formulario), ButtonStyle: primary)
+      actionbutton cancelar (Caption: 'Voltar', Action: close page)
+    }
+  }
+};
+
+/** Detalhe consultável só com acesso ao objecto; não dá escrita persistente. */
+create or modify page CampusFix.Pedido_Detalhe (
+  Params: ($Pedido: CampusFix.Pedido), Title: 'Detalhe do pedido',
+  Layout: MyFirstModule.App_Default, Class: 'cf-page'
+) {
+  dataview detalhe (DataSource: $Pedido) {
+    dynamictext titulo (Attribute: Titulo, RenderMode: H1)
+    dynamictext numero (Content: 'Pedido n.º {1}', ContentParams: ({1} = Numero))
+    dynamictext estado (Content: 'Estado: {1} · Prioridade: {2}', ContentParams: ({1} = Estado, {2} = Prioridade))
+    dynamictext autor (Content: 'Criado por: {1}', ContentParams: ({1} = CriadorNome))
+    dynamictext tecnico (Content: 'Técnico: {1}', ContentParams: ({1} = TecnicoNome))
+    dynamictext datas (Content: 'Criação: {1} · Conclusão: {2}', ContentParams: (
+      {1} = DataCriacao format (DateFormat: DateTime), {2} = DataConclusao format (DateFormat: DateTime)))
+    textarea descricao (Label: 'Descrição', Attribute: Descricao, Editable: Never)
+    textbox localizacao (Label: 'Localização', Attribute: Localizacao, Editable: Never)
+    container acoes (Class: 'cf-actions') {
+      actionbutton editar (Caption: 'Editar', Action: call microflow CampusFix.ACT_Pedido_Editar(Pedido = $Pedido),
+        Visible: $currentObject/Estado != CampusFix.Estado.Resolvido and $currentObject/Estado != CampusFix.Estado.Cancelado)
+      actionbutton comentario (Caption: 'Acrescentar comentário', Action: call microflow CampusFix.ACT_Comentario_Novo(Pedido = $Pedido),
+        Visible: $currentObject/Estado != CampusFix.Estado.Resolvido and $currentObject/Estado != CampusFix.Estado.Cancelado)
+      actionbutton assumir (Caption: 'Assumir pedido', Action: call microflow CampusFix.ACT_Pedido_Assumir(Pedido = $Pedido),
+        Visible: $currentObject/CampusFix.Pedido_Tecnico = empty and $currentObject/Estado != CampusFix.Estado.Resolvido and $currentObject/Estado != CampusFix.Estado.Cancelado)
+      actionbutton tratar (Caption: 'Iniciar tratamento', Action: call microflow CampusFix.ACT_Pedido_IniciarTratamento(Pedido = $Pedido),
+        Visible: $currentObject/Estado = CampusFix.Estado.EmAnalise)
+      actionbutton concluir (Caption: 'Concluir pedido', Action: call microflow CampusFix.ACT_Pedido_PrepararConclusao(Pedido = $Pedido), ButtonStyle: success,
+        Visible: $currentObject/Estado = CampusFix.Estado.EmAnalise or $currentObject/Estado = CampusFix.Estado.EmTratamento)
+      actionbutton cancelar (Caption: 'Cancelar pedido', Action: call microflow CampusFix.ACT_Pedido_Cancelar(Pedido = $Pedido) with (Confirmation: 'Queres cancelar este pedido?'), ButtonStyle: danger,
+        Visible: $currentObject/Estado != CampusFix.Estado.Resolvido and $currentObject/Estado != CampusFix.Estado.Cancelado)
+    }
+    dynamictext comentariosTitulo (Content: 'Acompanhamento', RenderMode: H3)
+    listview comentarios (DataSource: database CampusFix.Comentario where [CampusFix.Comentario_Pedido = $Pedido] sort by DataComentario asc) {
+      dynamictext autorComentario (Content: '{1} · {2}', ContentParams: ({1} = AutorNome, {2} = DataComentario format (DateFormat: DateTime)))
+      dynamictext textoComentario (Attribute: Texto)
+    }
+    dynamictext historicoTitulo (Content: 'Histórico de estados', RenderMode: H3)
+    listview historico (DataSource: database CampusFix.HistoricoEstado where [CampusFix.Historico_Pedido = $Pedido] sort by DataAlteracao desc) {
+      dynamictext evento (Content: '{1} → {2} · {3} · {4}', ContentParams: (
+        {1} = EstadoAnterior, {2} = EstadoNovo, {3} = AutorNome, {4} = DataAlteracao format (DateFormat: DateTime)))
+    }
+  }
+};
+
+/** Apenas texto é editável; associação/autor/data são controlados no servidor. */
+create or modify page CampusFix.Comentario_Formulario (
+  Params: ($Formulario: CampusFix.FormularioComentario), Title: 'Acrescentar comentário',
+  Layout: MyFirstModule.App_Default, Class: 'cf-page'
+) {
+  dynamictext heading (Content: 'Acrescentar informação', RenderMode: H1)
+  dataview formulario (DataSource: $Formulario, FormOrientation: Vertical) {
+    textarea texto (Label: 'Comentário', Attribute: Texto)
+    footer {
+      actionbutton guardar (Caption: 'Publicar comentário', Action: call microflow CampusFix.ACT_Comentario_Registar(Formulario = $Formulario), ButtonStyle: primary)
+      actionbutton voltar (Caption: 'Voltar', Action: close page)
+    }
+  }
+};
+
+/** A conclusão exige uma nota do técnico responsável. */
+create or modify page CampusFix.Pedido_Concluir (
+  Params: ($Formulario: CampusFix.FormularioResolucao), Title: 'Concluir pedido',
+  Layout: MyFirstModule.App_Default, Class: 'cf-page'
+) {
+  dynamictext heading (Content: 'Registar a resolução', RenderMode: H1)
+  dynamictext ajuda (Content: 'Explica o que foi feito. Ao concluir, a data fica registada e o pedido deixa de ser editável.')
+  dataview formulario (DataSource: $Formulario, FormOrientation: Vertical) {
+    textarea texto (Label: 'Nota de resolução', Attribute: Texto)
+    footer {
+      actionbutton concluir (Caption: 'Concluir pedido', Action: call microflow CampusFix.ACT_Pedido_Concluir(Formulario = $Formulario), ButtonStyle: success)
+      actionbutton voltar (Caption: 'Voltar', Action: close page)
+    }
+  }
+};
+
+/** Administração do catálogo sem eliminar categorias usadas no histórico. */
+create or modify page CampusFix.Categoria_Overview (
+  Title: 'Gerir categorias', Layout: MyFirstModule.App_Default, Url: 'categorias', Class: 'cf-page'
+) {
+  dynamictext heading (Content: 'Categorias', RenderMode: H1)
+  dynamictext ajuda (Content: 'Desativa as categorias que deixarem de ser usadas. Os pedidos existentes mantêm a classificação.')
+  actionbutton nova (Caption: 'Nova categoria', Action: call microflow CampusFix.ACT_Categoria_Nova, ButtonStyle: primary)
+  datagrid categorias (DataSource: database CampusFix.Categoria sort by Nome asc) {
+    column (Attribute: Nome, Caption: 'Nome') { textfilter nome }
+    column (Attribute: Descricao, Caption: 'Descrição')
+    column (Attribute: Ativa, Caption: 'Ativa') { dropdownfilter ativa }
+    column (Caption: 'Editar') {
+      actionbutton editar (Caption: 'Editar', Action: show page CampusFix.Categoria_Formulario(Categoria = $currentObject))
+    }
+  }
+};
+
+/** Formulário de administração protegido por página e Entity Access. */
+create or modify page CampusFix.Categoria_Formulario (
+  Params: ($Categoria: CampusFix.Categoria), Title: 'Categoria',
+  Layout: MyFirstModule.App_Default, Class: 'cf-page'
+) {
+  dynamictext heading (Content: 'Categoria', RenderMode: H1)
+  dataview formulario (DataSource: $Categoria, FormOrientation: Vertical) {
+    textbox nome (Label: 'Nome', Attribute: Nome)
+    textarea descricao (Label: 'Descrição', Attribute: Descricao)
+    checkbox ativa (Label: 'Disponível para novos pedidos', Attribute: Ativa)
+    footer {
+      actionbutton guardar (Caption: 'Guardar categoria', Action: call microflow CampusFix.ACT_Categoria_Guardar(Categoria = $Categoria), ButtonStyle: primary)
+      actionbutton cancelar (Caption: 'Cancelar', Action: cancel changes)
+    }
+  }
+};

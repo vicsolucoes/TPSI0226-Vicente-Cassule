@@ -1,0 +1,82 @@
+mdl 1;
+
+-- Três perfis funcionais; Administrator e User são os nomes do modelo inicial.
+create or modify user role Utilizador (ModuleRoles: (CampusFix.Utilizador, System.User, Administration.User, MyFirstModule.User));
+create or modify user role User (ModuleRoles: (CampusFix.Utilizador, System.User, Administration.User, MyFirstModule.User));
+create or modify user role Tecnico (ModuleRoles: (CampusFix.Tecnico, System.User, Administration.User, MyFirstModule.User));
+create or modify user role Administrator (ModuleRoles: (CampusFix.Administrador, System.Administrator, Administration.Administrator, MyFirstModule.Administrator), ManageAllRoles: true);
+
+-- Dados persistentes: nenhum perfil altera pedidos/comentários/histórico pelo cliente.
+grant read * on entity CampusFix.Pedido to CampusFix.Utilizador
+  where [CampusFix.Pedido_Criador = '[%CurrentUser%]'];
+grant read * on entity CampusFix.Pedido to CampusFix.Tecnico
+  where [CampusFix.Pedido_Tecnico = '[%CurrentUser%]' or
+    (CampusFix.Pedido_Tecnico = empty and (Estado = 'Novo' or Estado = 'EmAnalise' or Estado = 'EmTratamento'))];
+grant read * on entity CampusFix.Pedido to CampusFix.Administrador;
+grant read * on entity CampusFix.Categoria to CampusFix.Utilizador, CampusFix.Tecnico;
+grant create, read *, write * on entity CampusFix.Categoria to CampusFix.Administrador;
+
+grant read * on entity CampusFix.Comentario to CampusFix.Utilizador
+  where [CampusFix.Comentario_Pedido/CampusFix.Pedido/CampusFix.Pedido_Criador = '[%CurrentUser%]'];
+grant read * on entity CampusFix.Comentario to CampusFix.Tecnico
+  where [CampusFix.Comentario_Pedido/CampusFix.Pedido[CampusFix.Pedido_Tecnico = '[%CurrentUser%]' or
+    (CampusFix.Pedido_Tecnico = empty and (Estado = 'Novo' or Estado = 'EmAnalise' or Estado = 'EmTratamento'))]];
+grant read * on entity CampusFix.Comentario to CampusFix.Administrador;
+
+grant read * on entity CampusFix.HistoricoEstado to CampusFix.Utilizador
+  where [CampusFix.Historico_Pedido/CampusFix.Pedido/CampusFix.Pedido_Criador = '[%CurrentUser%]'];
+grant read * on entity CampusFix.HistoricoEstado to CampusFix.Tecnico
+  where [CampusFix.Historico_Pedido/CampusFix.Pedido[CampusFix.Pedido_Tecnico = '[%CurrentUser%]' or
+    (CampusFix.Pedido_Tecnico = empty and (Estado = 'Novo' or Estado = 'EmAnalise' or Estado = 'EmTratamento'))]];
+grant read * on entity CampusFix.HistoricoEstado to CampusFix.Administrador;
+
+-- Rascunhos não persistentes: os destinos e as versões só são escritos no servidor.
+grant read *, write (Titulo, Descricao, Localizacao, Prioridade, Formulario_Categoria)
+  on entity CampusFix.FormularioPedido to CampusFix.Utilizador;
+grant read *, write (Texto) on entity CampusFix.FormularioComentario
+  to CampusFix.Utilizador, CampusFix.Tecnico, CampusFix.Administrador;
+grant read *, write (Texto) on entity CampusFix.FormularioResolucao to CampusFix.Tecnico;
+grant create, read *, write * on entity CampusFix.ResumoDashboard
+  to CampusFix.Utilizador, CampusFix.Tecnico, CampusFix.Administrador;
+
+-- Ações públicas; os SUB_* internos não têm permissões de execução no cliente.
+grant execute on microflow CampusFix.ACT_Pedido_Novo to CampusFix.Utilizador;
+grant execute on microflow CampusFix.ACT_Pedido_Editar to CampusFix.Utilizador;
+grant execute on microflow CampusFix.ACT_Pedido_Guardar to CampusFix.Utilizador;
+grant execute on microflow CampusFix.ACT_Pedido_Cancelar to CampusFix.Utilizador;
+grant execute on microflow CampusFix.ACT_Pedido_Assumir to CampusFix.Tecnico;
+grant execute on microflow CampusFix.ACT_Pedido_IniciarTratamento to CampusFix.Tecnico;
+grant execute on microflow CampusFix.ACT_Pedido_PrepararConclusao to CampusFix.Tecnico;
+grant execute on microflow CampusFix.ACT_Pedido_Concluir to CampusFix.Tecnico;
+grant execute on microflow CampusFix.ACT_Categoria_Nova to CampusFix.Administrador;
+grant execute on microflow CampusFix.ACT_Categoria_Guardar to CampusFix.Administrador;
+grant execute on microflow CampusFix.DS_Resumo to CampusFix.Utilizador, CampusFix.Tecnico, CampusFix.Administrador;
+grant execute on microflow CampusFix.ACT_Comentario_Novo to CampusFix.Utilizador, CampusFix.Tecnico, CampusFix.Administrador;
+grant execute on microflow CampusFix.ACT_Comentario_Registar to CampusFix.Utilizador, CampusFix.Tecnico, CampusFix.Administrador;
+grant view on page CampusFix.Pedido_Meus to CampusFix.Utilizador;
+grant view on page CampusFix.Pedido_Formulario to CampusFix.Utilizador;
+grant view on page CampusFix.Pedido_Gestao to CampusFix.Tecnico;
+grant view on page CampusFix.Pedido_Concluir to CampusFix.Tecnico;
+grant view on page CampusFix.Pedido_Todos to CampusFix.Administrador;
+grant view on page CampusFix.Categoria_Overview to CampusFix.Administrador;
+grant view on page CampusFix.Categoria_Formulario to CampusFix.Administrador;
+grant view on page CampusFix.Dashboard to CampusFix.Utilizador, CampusFix.Tecnico, CampusFix.Administrador;
+grant view on page CampusFix.Pedido_Detalhe to CampusFix.Utilizador, CampusFix.Tecnico, CampusFix.Administrador;
+grant view on page CampusFix.Comentario_Formulario to CampusFix.Utilizador, CampusFix.Tecnico, CampusFix.Administrador;
+
+-- Acesso anónimo e contas de demonstração desativados no projecto entregue.
+alter app security (SecurityLevel: production, EnableGuestAccess: false, EnableDemoUsers: false);
+update security CampusFix;
+
+create or modify navigation Responsive
+  home page CampusFix.Dashboard
+  {
+    menu item 'Painel inicial' (OnClick: show page CampusFix.Dashboard)
+    menu item 'Os meus pedidos' (OnClick: show page CampusFix.Pedido_Meus)
+    menu item 'Novo pedido' (OnClick: call microflow CampusFix.ACT_Pedido_Novo)
+    menu item 'Área do técnico' (OnClick: show page CampusFix.Pedido_Gestao)
+    menu item 'Todos os pedidos' (OnClick: show page CampusFix.Pedido_Todos)
+    menu item 'Categorias' (OnClick: show page CampusFix.Categoria_Overview)
+    menu item 'Utilizadores e perfis' (OnClick: show page Administration.Account_Overview)
+    menu item 'Terminar sessão' (OnClick: sign out)
+  };

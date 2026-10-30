@@ -1,0 +1,40 @@
+mdl 1;
+
+-- Contratos de página para resolver referências dos microflows na primeira geração.
+-- IF NOT EXISTS preserva as páginas completas em execuções seguintes.
+
+create page if not exists CampusFix.Dashboard (Title: 'Dashboard', Layout: MyFirstModule.App_Default) {
+};
+
+create page if not exists CampusFix.Pedido_Meus (Title: 'Pedido_Meus', Layout: MyFirstModule.App_Default) {
+};
+
+create page if not exists CampusFix.Pedido_Gestao (Title: 'Pedido_Gestao', Layout: MyFirstModule.App_Default) {
+};
+
+create page if not exists CampusFix.Pedido_Todos (Title: 'Pedido_Todos', Layout: MyFirstModule.App_Default) {
+};
+
+create page if not exists CampusFix.Categoria_Overview (Title: 'Categoria_Overview', Layout: MyFirstModule.App_Default) {
+};
+
+create page if not exists CampusFix.Pedido_Formulario (Params: ($Formulario: CampusFix.FormularioPedido), Title: 'Pedido_Formulario', Layout: MyFirstModule.App_Default) {
+  dataview contexto (DataSource: $Formulario) {}
+};
+
+create page if not exists CampusFix.Pedido_Detalhe (Params: ($Pedido: CampusFix.Pedido), Title: 'Pedido_Detalhe', Layout: MyFirstModule.App_Default) {
+  dataview contexto (DataSource: $Pedido) {}
+};
+
+create page if not exists CampusFix.Comentario_Formulario (Params: ($Formulario: CampusFix.FormularioComentario), Title: 'Comentario_Formulario', Layout: MyFirstModule.App_Default) {
+  dataview contexto (DataSource: $Formulario) {}
+};
+
+create page if not exists CampusFix.Pedido_Concluir (Params: ($Formulario: CampusFix.FormularioResolucao), Title: 'Pedido_Concluir', Layout: MyFirstModule.App_Default) {
+  dataview contexto (DataSource: $Formulario) {}
+};
+
+create page if not exists CampusFix.Categoria_Formulario (Params: ($Categoria: CampusFix.Categoria), Title: 'Categoria_Formulario', Layout: MyFirstModule.App_Default) {
+  dataview contexto (DataSource: $Categoria) {}
+};
+
