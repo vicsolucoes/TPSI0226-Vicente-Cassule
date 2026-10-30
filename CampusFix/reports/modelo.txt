@@ -1,0 +1,52 @@
+| Module            | Source              | Entities | Enums | Pages | Snippets | Microflows | Nanoflows | Workflows | Constants | JavaActions | PubREST | PubOData | ConOData | BizEvents | ExtDB |
+|-------------------|---------------------|----------|-------|-------|----------|------------|-----------|-----------|-----------|-------------|---------|----------|----------|-----------|-------|
+| Administration    | Marketplace v4.3.2  | 2        | 0     | 9     | 1        | 8          | 0         | 0         | 0         | 0           | 0       | 0        | 0        | 0         | 0     |
+| Atlas_Core        | Marketplace v4.1.3  | 0        | 0     | 0     | 2        | 0          | 0         | 0         | 0         | 0           | 0       | 0        | 0        | 0         | 0     |
+| Atlas_Web_Content | Marketplace v4.1.0  | 1        | 0     | 0     | 0        | 0          | 2         | 0         | 0         | 0           | 0       | 0        | 0        | 0         | 0     |
+| CampusFix         |                     | 8        | 2     | 0     | 0        | 12         | 0         | 0         | 0         | 0           | 0       | 0        | 0        | 0         | 0     |
+| DataWidgets       | Marketplace v3.5.0  | 0        | 1     | 0     | 0        | 0          | 0         | 0         | 0         | 0           | 0       | 0        | 0        | 0         | 0     |
+| FeedbackModule    | Marketplace v4.0.2  | 2        | 2     | 6     | 1        | 7          | 11        | 0         | 2         | 2           | 0       | 0        | 0        | 0         | 0     |
+| MyFirstModule     |                     | 0        | 0     | 1     | 0        | 1          | 0         | 0         | 0         | 0           | 0       | 0        | 0        | 0         | 0     |
+| NanoflowCommons   | Marketplace v6.0.0  | 2        | 3     | 0     | 0        | 0          | 0         | 0         | 0         | 0           | 0       | 0        | 0        | 0         | 0     |
+| System            |                     | 39       | 15    | 0     | 0        | 0          | 0         | 0         | 0         | 1           | 0       | 0        | 0        | 0         | 0     |
+| WebActions        | Marketplace v2.11.0 | 0        | 1     | 0     | 0        | 0          | 0         | 0         | 0         | 0           | 0       | 0        | 0        | 0         | 0     |
+
+(10 modules)
+| Qualified Name                         | Module    | Name                         | Excluded | Folder             | Params | Actions | McCabe | Returns |
+|----------------------------------------|-----------|------------------------------|----------|--------------------|--------|---------|--------|---------|
+| CampusFix.SUB_Comentario_Registar      | CampusFix | SUB_Comentario_Registar      | false    | Regras/Comentarios | 2      | 10      | 5      | Boolean |
+| CampusFix.SUB_EhUtilizador             | CampusFix | SUB_EhUtilizador             | false    | Regras/Seguranca   | 1      | 2       | 1      | Boolean |
+| CampusFix.SUB_Formulario_Validar       | CampusFix | SUB_Formulario_Validar       | false    | Regras/Validacoes  | 1      | 12      | 10     | String  |
+| CampusFix.SUB_Historico_Registar       | CampusFix | SUB_Historico_Registar       | false    | Regras/Historico   | 4      | 3       | 2      | Boolean |
+| CampusFix.SUB_Pedido_Aberto            | CampusFix | SUB_Pedido_Aberto            | false    | Regras/Pedidos     | 1      | 1       | 2      | Boolean |
+| CampusFix.SUB_Pedido_Assumir           | CampusFix | SUB_Pedido_Assumir           | false    | Regras/Pedidos     | 2      | 9       | 4      | Boolean |
+| CampusFix.SUB_Pedido_Cancelar          | CampusFix | SUB_Pedido_Cancelar          | false    | Regras/Pedidos     | 2      | 9       | 4      | Boolean |
+| CampusFix.SUB_Pedido_Concluir          | CampusFix | SUB_Pedido_Concluir          | false    | Regras/Pedidos     | 2      | 14      | 7      | Boolean |
+| CampusFix.SUB_Pedido_Guardar           | CampusFix | SUB_Pedido_Guardar           | false    | Regras/Pedidos     | 2      | 16      | 7      | Object  |
+| CampusFix.SUB_Pedido_IniciarTratamento | CampusFix | SUB_Pedido_IniciarTratamento | false    | Regras/Pedidos     | 2      | 7       | 4      | Boolean |
+| CampusFix.SUB_Pedido_PodeConsultar     | CampusFix | SUB_Pedido_PodeConsultar     | false    | Regras/Seguranca   | 2      | 9       | 6      | Boolean |
+| CampusFix.SUB_TemPerfil                | CampusFix | SUB_TemPerfil                | false    | Regras/Seguranca   | 2      | 4       | 2      | Boolean |
+
+(12 microflows)
+| Qualified Name | Module | Name | Excluded | Folder | Title | url | Params |
+|----------------|--------|------|----------|--------|-------|-----|--------|
+
+(0 pages)
+Security Matrix for CampusFix:
+
+## Entity Access
+
+(no entity access rules configured)
+
+## Microflow Access
+
+(no microflow access rules configured)
+
+## Page Access
+
+(no page access rules configured)
+
+## Workflow Access
+
+(workflow access is controlled through triggering microflows and UserTask targeting, not document-level roles)
+

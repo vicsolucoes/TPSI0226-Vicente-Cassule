@@ -1,0 +1,17 @@
+WARNING: This is a vibe-coded PoC, alpha quality, use with caution.
+Using mx: /home/runner/.mxcli/mxbuild/11.6.0/modeler/mx
+Checking a temporary copy (mx writes into the project it checks; the project on disk is not changed).
+Normalising widget definitions on the temporary copy...
+Checking project /home/runner/work/TPSI0226-Vicente-Cassule/TPSI0226-Vicente-Cassule/CampusFix/CampusFix.mpr...
+Checking your app for issues...
+Checking the version of the mpr file.
+The mpr file version is '11.6.0'.
+Loading the mpr file.
+The mpr file version is '11.6.0'.
+Checking app for errors...
+The app contains: 0 errors.
+Note: widget definitions were normalised on a temporary copy before checking, so a
+  CE0463 the stored project still has is not reported here; it fails MxBuild and
+  `mxcli run --local`. Use --no-update-widgets to check the project as stored, and
+  `mxcli fix widgets` to apply the normalisation to the project.
+Project check passed.
