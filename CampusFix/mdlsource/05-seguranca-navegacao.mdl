@@ -11,7 +11,7 @@ grant read * on entity CampusFix.Pedido to CampusFix.Utilizador
   where [CampusFix.Pedido_Criador = '[%CurrentUser%]'];
 grant read * on entity CampusFix.Pedido to CampusFix.Tecnico
   where [CampusFix.Pedido_Tecnico = '[%CurrentUser%]' or
-    (CampusFix.Pedido_Tecnico = empty and (Estado = 'Novo' or Estado = 'EmAnalise' or Estado = 'EmTratamento'))];
+    (not(CampusFix.Pedido_Tecnico/System.User) and (Estado = 'Novo' or Estado = 'EmAnalise' or Estado = 'EmTratamento'))];
 grant read * on entity CampusFix.Pedido to CampusFix.Administrador;
 grant read * on entity CampusFix.Categoria to CampusFix.Utilizador, CampusFix.Tecnico;
 grant create, read *, write * on entity CampusFix.Categoria to CampusFix.Administrador;
@@ -20,14 +20,14 @@ grant read * on entity CampusFix.Comentario to CampusFix.Utilizador
   where [CampusFix.Comentario_Pedido/CampusFix.Pedido/CampusFix.Pedido_Criador = '[%CurrentUser%]'];
 grant read * on entity CampusFix.Comentario to CampusFix.Tecnico
   where [CampusFix.Comentario_Pedido/CampusFix.Pedido[CampusFix.Pedido_Tecnico = '[%CurrentUser%]' or
-    (CampusFix.Pedido_Tecnico = empty and (Estado = 'Novo' or Estado = 'EmAnalise' or Estado = 'EmTratamento'))]];
+    (not(CampusFix.Pedido_Tecnico/System.User) and (Estado = 'Novo' or Estado = 'EmAnalise' or Estado = 'EmTratamento'))]];
 grant read * on entity CampusFix.Comentario to CampusFix.Administrador;
 
 grant read * on entity CampusFix.HistoricoEstado to CampusFix.Utilizador
   where [CampusFix.Historico_Pedido/CampusFix.Pedido/CampusFix.Pedido_Criador = '[%CurrentUser%]'];
 grant read * on entity CampusFix.HistoricoEstado to CampusFix.Tecnico
   where [CampusFix.Historico_Pedido/CampusFix.Pedido[CampusFix.Pedido_Tecnico = '[%CurrentUser%]' or
-    (CampusFix.Pedido_Tecnico = empty and (Estado = 'Novo' or Estado = 'EmAnalise' or Estado = 'EmTratamento'))]];
+    (not(CampusFix.Pedido_Tecnico/System.User) and (Estado = 'Novo' or Estado = 'EmAnalise' or Estado = 'EmTratamento'))]];
 grant read * on entity CampusFix.HistoricoEstado to CampusFix.Administrador;
 
 -- Rascunhos não persistentes: os destinos e as versões só são escritos no servidor.

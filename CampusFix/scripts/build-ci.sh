@@ -11,10 +11,11 @@ for source in mdlsource/*.mdl; do
   "$MXCLI" check "$source" -p "$MPR" --references
   "$MXCLI" exec "$source" -p "$MPR"
 done
-if ! rg -q 'campusfix' theme/web/main.scss; then
+if ! grep -q 'campusfix' theme/web/main.scss; then
   printf '\n@import "campusfix";\n' >> theme/web/main.scss
 fi
-"$MXCLI" docker check -p "$MPR" 2>&1 | tee reports/mendix-check.log
+"$MXCLI" fix widgets -p "$MPR"
+"$MXCLI" docker check --no-update-widgets -p "$MPR" 2>&1 | tee reports/mendix-check.log
 "$MXCLI" -p "$MPR" -c 'list modules; list microflows in CampusFix; list pages in CampusFix; describe security matrix in CampusFix' > reports/modelo.txt
 "$MXCLI" lint -p "$MPR" --exclude System --exclude Administration --exclude Atlas_Core --exclude Atlas_Web_Content --exclude Atlas_Web_Layouts --exclude DataWidgets --exclude FeedbackModule --exclude NanoflowCommons > reports/lint.txt 2>&1 || true
 if [ -f tests/regras.test.mdl ]; then
