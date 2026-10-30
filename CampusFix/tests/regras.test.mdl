@@ -2,11 +2,11 @@ mdl 1;
 
 /**
  * @test RF02 criação com autor data e estado automáticos
- * @expect $P != empty
- * @expect $P/Estado = CampusFix.Estado.Novo
- * @expect $P/DataCriacao != empty
- * @expect $P/DataConclusao = empty
- * @expect $P/CampusFix.Pedido_Criador = $A
+ * @expect $Atual != empty
+ * @expect $Atual/Estado = CampusFix.Estado.Novo
+ * @expect $Atual/DataCriacao != empty
+ * @expect $Atual/DataConclusao = empty
+ * @expect $Atual/CampusFix.Pedido_Criador = $A
  * @cleanup rollback
  */
 $F = call microflow CampusFixTest.CriarFixture();
@@ -16,6 +16,8 @@ retrieve $B from $F/CampusFixTest.Fixture_B;
 retrieve $T1 from $F/CampusFixTest.Fixture_T1;
 retrieve $T2 from $F/CampusFixTest.Fixture_T2;
 retrieve $Cat from $F/CampusFixTest.Fixture_Categoria;
+-- Ler de novo o estado persistido, independente da referência usada pelo chamador.
+retrieve $Atual from CampusFix.Pedido where [id = $P] first;
 
 /
 
@@ -32,12 +34,15 @@ retrieve $T1 from $F/CampusFixTest.Fixture_T1;
 retrieve $T2 from $F/CampusFixTest.Fixture_T2;
 retrieve $Cat from $F/CampusFixTest.Fixture_Categoria;
 $Permitido = call microflow CampusFix.SUB_Pedido_PodeConsultar(Pedido = $P, Actor = $B);
+-- Ler de novo o estado persistido, independente da referência usada pelo chamador.
+retrieve $Atual from CampusFix.Pedido where [id = $P] first;
+
 /
 
 /**
  * @test RF05 utilizador comum não pode assumir pedido
  * @expect $Assumiu = false
- * @expect $P/CampusFix.Pedido_Tecnico = empty
+ * @expect $Atual/CampusFix.Pedido_Tecnico = empty
  * @cleanup rollback
  */
 $F = call microflow CampusFixTest.CriarFixture();
@@ -48,14 +53,17 @@ retrieve $T1 from $F/CampusFixTest.Fixture_T1;
 retrieve $T2 from $F/CampusFixTest.Fixture_T2;
 retrieve $Cat from $F/CampusFixTest.Fixture_Categoria;
 $Assumiu = call microflow CampusFix.SUB_Pedido_Assumir(Pedido = $P, Actor = $A);
+-- Ler de novo o estado persistido, independente da referência usada pelo chamador.
+retrieve $Atual from CampusFix.Pedido where [id = $P] first;
+
 /
 
 /**
  * @test RF05 técnico assume e o segundo técnico não substitui
  * @expect $Primeiro = true
  * @expect $Segundo = false
- * @expect $P/CampusFix.Pedido_Tecnico = $T1
- * @expect $P/Estado = CampusFix.Estado.EmAnalise
+ * @expect $Atual/CampusFix.Pedido_Tecnico = $T1
+ * @expect $Atual/Estado = CampusFix.Estado.EmAnalise
  * @cleanup rollback
  */
 $F = call microflow CampusFixTest.CriarFixture();
@@ -67,6 +75,9 @@ retrieve $T2 from $F/CampusFixTest.Fixture_T2;
 retrieve $Cat from $F/CampusFixTest.Fixture_Categoria;
 $Primeiro = call microflow CampusFix.SUB_Pedido_Assumir(Pedido = $P, Actor = $T1);
 $Segundo = call microflow CampusFix.SUB_Pedido_Assumir(Pedido = $P, Actor = $T2);
+-- Ler de novo o estado persistido, independente da referência usada pelo chamador.
+retrieve $Atual from CampusFix.Pedido where [id = $P] first;
+
 /
 
 /**
@@ -74,7 +85,7 @@ $Segundo = call microflow CampusFix.SUB_Pedido_Assumir(Pedido = $P, Actor = $T2)
  * @expect $Assumiu = true
  * @expect $Errado = false
  * @expect $Correto = true
- * @expect $P/Estado = CampusFix.Estado.EmTratamento
+ * @expect $Atual/Estado = CampusFix.Estado.EmTratamento
  * @cleanup rollback
  */
 $F = call microflow CampusFixTest.CriarFixture();
@@ -87,14 +98,17 @@ retrieve $Cat from $F/CampusFixTest.Fixture_Categoria;
 $Assumiu = call microflow CampusFix.SUB_Pedido_Assumir(Pedido = $P, Actor = $T1);
 $Errado = call microflow CampusFix.SUB_Pedido_IniciarTratamento(Pedido = $P, Actor = $T2);
 $Correto = call microflow CampusFix.SUB_Pedido_IniciarTratamento(Pedido = $P, Actor = $T1);
+-- Ler de novo o estado persistido, independente da referência usada pelo chamador.
+retrieve $Atual from CampusFix.Pedido where [id = $P] first;
+
 /
 
 /**
  * @test RF07 concluir regista data nota e não repete a conclusão
  * @expect $Feito = true
  * @expect $Repetido = false
- * @expect $P/Estado = CampusFix.Estado.Resolvido
- * @expect $P/DataConclusao != empty
+ * @expect $Atual/Estado = CampusFix.Estado.Resolvido
+ * @expect $Atual/DataConclusao != empty
  * @expect count($Notas) = 1
  * @cleanup rollback
  */
@@ -110,12 +124,15 @@ $Form = create CampusFix.FormularioResolucao (Texto = 'Fonte de alimentação su
 $Feito = call microflow CampusFix.SUB_Pedido_Concluir(Formulario = $Form, Actor = $T1);
 $Repetido = call microflow CampusFix.SUB_Pedido_Concluir(Formulario = $Form, Actor = $T1);
 retrieve $Notas from CampusFix.Comentario where [CampusFix.Comentario_Pedido = $P];
+-- Ler de novo o estado persistido, independente da referência usada pelo chamador.
+retrieve $Atual from CampusFix.Pedido where [id = $P] first;
+
 /
 
 /**
  * @test RF07 impede conclusão sem nota de resolução
  * @expect $Feito = false
- * @expect $P/DataConclusao = empty
+ * @expect $Atual/DataConclusao = empty
  * @cleanup rollback
  */
 $F = call microflow CampusFixTest.CriarFixture();
@@ -128,13 +145,17 @@ retrieve $Cat from $F/CampusFixTest.Fixture_Categoria;
 $Assumiu = call microflow CampusFix.SUB_Pedido_Assumir(Pedido = $P, Actor = $T1);
 $Form = create CampusFix.FormularioResolucao (Texto = ' ', CampusFix.FormularioResolucao_Pedido = $P);
 $Feito = call microflow CampusFix.SUB_Pedido_Concluir(Formulario = $Form, Actor = $T1);
+-- Ler de novo o estado persistido, independente da referência usada pelo chamador.
+retrieve $Atual from CampusFix.Pedido where [id = $P] first;
+
 /
 
 /**
  * @test RF04 não edita pedido resolvido
  * @expect $Resultado = empty
- * @expect $P/Titulo = 'Computador não liga'
+ * @expect $Atual/Titulo = 'Computador não liga'
  * @cleanup rollback
+  * @expect $Atual/Estado = CampusFix.Estado.Resolvido
  */
 $F = call microflow CampusFixTest.CriarFixture();
 retrieve $P from $F/CampusFixTest.Fixture_Pedido;
@@ -148,6 +169,9 @@ $Resolucao = create CampusFix.FormularioResolucao (Texto = 'Reparação confirma
 $Feito = call microflow CampusFix.SUB_Pedido_Concluir(Formulario = $Resolucao, Actor = $T1);
 $Form = create CampusFix.FormularioPedido (Titulo = 'Alteração indevida', Descricao = 'Tentativa de alterar um pedido fechado.', Prioridade = CampusFix.Prioridade.Alta, VersaoOriginal = $P/Versao, CampusFix.Formulario_Categoria = $Cat, CampusFix.Formulario_Pedido = $P);
 $Resultado = call microflow CampusFix.SUB_Pedido_Guardar(Formulario = $Form, Actor = $A);
+-- Ler de novo o estado persistido, independente da referência usada pelo chamador.
+retrieve $Atual from CampusFix.Pedido where [id = $P] first;
+
 /
 
 /**
@@ -164,14 +188,17 @@ retrieve $T2 from $F/CampusFixTest.Fixture_T2;
 retrieve $Cat from $F/CampusFixTest.Fixture_Categoria;
 $Form = create CampusFix.FormularioPedido (Titulo = 'Alteração indevida', Descricao = 'Tentativa de alterar o pedido alheio.', Prioridade = CampusFix.Prioridade.Alta, VersaoOriginal = $P/Versao, CampusFix.Formulario_Categoria = $Cat, CampusFix.Formulario_Pedido = $P);
 $Resultado = call microflow CampusFix.SUB_Pedido_Guardar(Formulario = $Form, Actor = $B);
+-- Ler de novo o estado persistido, independente da referência usada pelo chamador.
+retrieve $Atual from CampusFix.Pedido where [id = $P] first;
+
 /
 
 /**
  * @test RF04 edição válida mantém autor e data de criação
  * @expect $Resultado != empty
- * @expect $P/Titulo = 'Computador da sala 12'
- * @expect $P/CampusFix.Pedido_Criador = $A
- * @expect $P/DataCriacao = $DataOriginal
+ * @expect $Atual/Titulo = 'Computador da sala 12'
+ * @expect $Atual/CampusFix.Pedido_Criador = $A
+ * @expect $Atual/DataCriacao = $DataOriginal
  * @cleanup rollback
  */
 $F = call microflow CampusFixTest.CriarFixture();
@@ -184,6 +211,9 @@ retrieve $Cat from $F/CampusFixTest.Fixture_Categoria;
 declare $DataOriginal DateTime = $P/DataCriacao;
 $Form = create CampusFix.FormularioPedido (Titulo = 'Computador da sala 12', Descricao = 'O computador não dá sinal de energia.', Prioridade = CampusFix.Prioridade.Urgente, VersaoOriginal = $P/Versao, CampusFix.Formulario_Categoria = $Cat, CampusFix.Formulario_Pedido = $P);
 $Resultado = call microflow CampusFix.SUB_Pedido_Guardar(Formulario = $Form, Actor = $A);
+-- Ler de novo o estado persistido, independente da referência usada pelo chamador.
+retrieve $Atual from CampusFix.Pedido where [id = $P] first;
+
 /
 
 /**
@@ -204,6 +234,9 @@ retrieve $Cat from $F/CampusFixTest.Fixture_Categoria;
 $Form = create CampusFix.FormularioComentario (Texto = 'A tomada funciona com outro equipamento.', CampusFix.FormularioComentario_Pedido = $P);
 $Feito = call microflow CampusFix.SUB_Comentario_Registar(Formulario = $Form, Actor = $A);
 retrieve $Nota from CampusFix.Comentario where [CampusFix.Comentario_Pedido = $P] first;
+-- Ler de novo o estado persistido, independente da referência usada pelo chamador.
+retrieve $Atual from CampusFix.Pedido where [id = $P] first;
+
 /
 
 /**
@@ -222,6 +255,9 @@ retrieve $Cat from $F/CampusFixTest.Fixture_Categoria;
 $Form = create CampusFix.FormularioComentario (Texto = 'Comentário indevido.', CampusFix.FormularioComentario_Pedido = $P);
 $Feito = call microflow CampusFix.SUB_Comentario_Registar(Formulario = $Form, Actor = $B);
 retrieve $Notas from CampusFix.Comentario where [CampusFix.Comentario_Pedido = $P];
+-- Ler de novo o estado persistido, independente da referência usada pelo chamador.
+retrieve $Atual from CampusFix.Pedido where [id = $P] first;
+
 /
 
 /**
@@ -239,14 +275,17 @@ retrieve $Cat from $F/CampusFixTest.Fixture_Categoria;
 change $Cat (Ativa = false) commit;
 $Form = create CampusFix.FormularioPedido (Titulo = 'Novo problema', Descricao = 'Problema numa categoria desativada.', Prioridade = CampusFix.Prioridade.Media, CampusFix.Formulario_Categoria = $Cat);
 $Resultado = call microflow CampusFix.SUB_Pedido_Guardar(Formulario = $Form, Actor = $A);
+-- Ler de novo o estado persistido, independente da referência usada pelo chamador.
+retrieve $Atual from CampusFix.Pedido where [id = $P] first;
+
 /
 
 /**
  * @test Extra cancelamento exclusivo do autor e estado terminal
  * @expect $Errado = false
  * @expect $Correto = true
- * @expect $P/Estado = CampusFix.Estado.Cancelado
- * @expect $P/DataConclusao = empty
+ * @expect $Atual/Estado = CampusFix.Estado.Cancelado
+ * @expect $Atual/DataConclusao = empty
  * @expect $Aberto = false
  * @cleanup rollback
  */
@@ -259,7 +298,10 @@ retrieve $T2 from $F/CampusFixTest.Fixture_T2;
 retrieve $Cat from $F/CampusFixTest.Fixture_Categoria;
 $Errado = call microflow CampusFix.SUB_Pedido_Cancelar(Pedido = $P, Actor = $B);
 $Correto = call microflow CampusFix.SUB_Pedido_Cancelar(Pedido = $P, Actor = $A);
-$Aberto = call microflow CampusFix.SUB_Pedido_Aberto(Pedido = $P);
+-- Ler de novo o estado persistido, independente da referência usada pelo chamador.
+retrieve $Atual from CampusFix.Pedido where [id = $P] first;
+$Aberto = call microflow CampusFix.SUB_Pedido_Aberto(Pedido = $Atual);
+
 /
 
 /**
@@ -277,6 +319,9 @@ retrieve $Cat from $F/CampusFixTest.Fixture_Categoria;
 $Form = create CampusFix.FormularioPedido (Titulo = 'Edição desatualizada', Descricao = 'Tentativa com versão anterior do pedido.', Prioridade = CampusFix.Prioridade.Media, VersaoOriginal = $P/Versao, CampusFix.Formulario_Categoria = $Cat, CampusFix.Formulario_Pedido = $P);
 $Assumiu = call microflow CampusFix.SUB_Pedido_Assumir(Pedido = $P, Actor = $T1);
 $Resultado = call microflow CampusFix.SUB_Pedido_Guardar(Formulario = $Form, Actor = $A);
+-- Ler de novo o estado persistido, independente da referência usada pelo chamador.
+retrieve $Atual from CampusFix.Pedido where [id = $P] first;
+
 /
 
 /**
