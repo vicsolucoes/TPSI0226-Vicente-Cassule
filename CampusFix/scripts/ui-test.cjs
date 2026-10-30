@@ -59,7 +59,7 @@ async function screenshot(page, name) {
   await a.page.getByLabel('Título', { exact: true }).fill('Computador da sala 12 não liga');
   await a.page.getByLabel('Descreve o problema', { exact: true }).fill('O computador não apresenta luzes nem inicia. A tomada funciona com outro equipamento.');
   await a.page.getByLabel('Edifício / sala (opcional)', { exact: true }).fill('Edifício A · Sala 12');
-  await a.page.getByRole('combobox').first().click();
+  await a.page.getByRole('combobox', { name: 'Categoria', exact: true }).click();
   await a.page.getByRole('option', { name: 'Informática', exact: true }).click();
   await a.page.getByRole('button', { name: 'Guardar pedido', exact: true }).click();
   await a.page.getByRole('heading', { name: 'Computador da sala 12 não liga', exact: true }).waitFor({ timeout: 20000 });
@@ -73,9 +73,12 @@ async function screenshot(page, name) {
   await assertText(a.page, 'Computador da sala 12 não liga');
   await screenshot(a.page, '02-meus-pedidos.png');
   await route(a.page, 'campusfix', 'CAMPUSFIX');
+  assert.equal((await a.page.locator('.cf-kpi').first().getByRole('heading').innerText()).trim(), '1');
   await screenshot(a.page, '01-dashboard.png');
 
   const b = await login('cf_aluno_b');
+  assert.equal((await b.page.locator('.cf-kpi').first().getByRole('heading').innerText()).trim(), '0');
+  results.push({ teste: 'RF10 dashboard de B não conta pedidos de A', resultado: 'PASS' });
   await route(b.page, 'meus-pedidos', 'Os meus pedidos');
   assert.equal(await b.page.getByText('Computador da sala 12 não liga', { exact: true }).count(), 0);
   assert.equal(await b.page.getByText('Utilizadores e perfis', { exact: true }).count(), 0);
@@ -126,7 +129,7 @@ async function screenshot(page, name) {
 })().catch(async error => {
   if (lastPage) {
     await lastPage.screenshot({ path: path.join(out, 'falha-interface.png'), fullPage: true }).catch(() => {});
-    fs.writeFileSync(path.join(out, 'falha-interface.txt'), (await lastPage.locator('body').innerText().catch(() => '')) + '\n' + error.stack);
+    fs.writeFileSync(path.join(out, 'falha-interface.txt'), (await lastPage.locator('body').ariaSnapshot().catch(() => '')) + '\n' + (await lastPage.locator('body').innerText().catch(() => '')) + '\n' + error.stack);
   }
   console.error(error.stack);
   process.exitCode = 1;
