@@ -11,6 +11,10 @@ let lastPage;
 const assertText = async (page, text) => {
   await page.getByText(text, { exact: false }).first().waitFor({ state: 'visible', timeout: 20000 });
 };
+const responseText = async response => {
+  const text = await response.text();
+  try { return JSON.stringify(JSON.parse(text)); } catch { return text; }
+};
 async function login(user) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const page = await context.newPage();
@@ -66,6 +70,7 @@ async function screenshot(page, name) {
   await a.page.getByRole('button', { name: 'Acrescentar comentário', exact: true }).click();
   await a.page.getByLabel('Comentário', { exact: true }).fill('O problema começou hoje no início da aula.');
   await a.page.getByRole('button', { name: 'Publicar comentário', exact: true }).click();
+  await a.page.getByRole('heading', { name: 'Computador da sala 12 não liga', exact: true }).waitFor({ timeout: 20000 });
   await assertText(a.page, 'O problema começou hoje no início da aula.');
   await screenshot(a.page, '03-detalhe-com-comentario.png');
   results.push({ teste: 'RF02 RF03 RF06 utilizador cria consulta e comenta', resultado: 'PASS' });
@@ -96,10 +101,10 @@ async function screenshot(page, name) {
   const headers = { ...userPacket.headers };
   for (const k of ['cookie', 'host', 'content-length', 'connection']) delete headers[k];
   const adminResponse = await admin.context.request.post(adminQuery.url, { headers: adminQuery.headers, data: adminQuery.data });
-  const adminBody = await adminResponse.text();
+  const adminBody = await responseText(adminResponse);
   assert.ok(adminBody.includes('Computador da sala 12 não liga'), 'Consulta de controlo administrativa deve devolver o pedido');
   const isolatedResponse = await b.context.request.post(adminQuery.url, { headers, data: adminQuery.data });
-  const isolatedBody = await isolatedResponse.text();
+  const isolatedBody = await responseText(isolatedResponse);
   assert.equal(isolatedBody.includes('Computador da sala 12 não liga'), false, 'Entity Access não pode revelar o pedido a B');
   assert.equal(isolatedResponse.status(), 200);
   results.push({ teste: 'Segurança: consulta administrativa repetida com sessão B não expõe o pedido', resultado: 'PASS' });

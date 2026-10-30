@@ -29,7 +29,7 @@ São executados pelo runtime Mendix, em base HSQLDB descartável. O módulo Camp
 
 `scripts/ui-test.cjs` inicia sessões de utilizador A, utilizador B, técnico e administrador numa cópia descartável da aplicação. Cria uma categoria, regista e comenta um pedido, trata-o e conclui-o, e verifica o bloqueio da edição após resolução. Repete uma consulta real da grelha administrativa com a sessão de B para verificar que as permissões não expõem o pedido de A.
 
-As contas de teste são exclusivamente dados fictícios. O ficheiro `tests/ui-demo.mdl` é aplicado só à cópia de teste em loopback; a aplicação entregue mantém contas demo desativadas.
+As contas de teste são exclusivamente dados fictícios. `scripts/ui-ci.sh` gera contas e palavras-passe aleatórias apenas numa cópia descartável em loopback. `tests/ui-demo.mdl` documenta este procedimento; não contém credenciais. O administrador necessário para a compilação também recebe uma palavra-passe efémera durante as verificações. Antes da exportação, o modelo é limpo: não tem palavras-passe administrativas nem definições de contas demo, e mantém o acesso anónimo desativado.
 
 Os resultados efetivos ficam em `reports/testes.xml`, `reports/testes.log` e `docs/evidencias/testes-interface.json`. As cinco capturas previstas são dashboard, meus pedidos, detalhe com comentário, área técnica e categorias.
 
@@ -40,4 +40,4 @@ bash scripts/build-ci.sh /caminho/para/mxcli
 bash scripts/ui-ci.sh /caminho/para/mxcli
 ```
 
-O segundo comando necessita de Node.js, acesso aos pacotes do Playwright e permissão para instalar as dependências do Chromium. Em alternativa, usar o workflow CampusFix Mendix no GitHub Actions.
+O primeiro comando necessita de mxcli v0.28.0, Java 21, .NET 8 e acesso ao MxBuild 11.6.0. O segundo necessita também de Node.js, acesso aos pacotes do Playwright e permissão para instalar as dependências do Chromium. Ambos usam HSQLDB em ambiente de teste. Em alternativa, usar o workflow CampusFix Mendix no GitHub Actions, que instala estas dependências e verifica o SHA256 do mxcli.
