@@ -4,7 +4,7 @@ mdl 1;
 create or modify user role Utilizador (ModuleRoles: (CampusFix.Utilizador, System.User, Administration.User, MyFirstModule.User));
 create or modify user role User (ModuleRoles: (CampusFix.Utilizador, System.User, Administration.User, MyFirstModule.User));
 create or modify user role Tecnico (ModuleRoles: (CampusFix.Tecnico, System.User, Administration.User, MyFirstModule.User));
-create or modify user role Administrator (ModuleRoles: (CampusFix.Administrador, System.Administrator, Administration.Administrator, MyFirstModule.Administrator), ManageAllRoles: true);
+create or modify user role Administrator (ModuleRoles: (CampusFix.Administrador, System.Administrator, Administration.Administrator, MyFirstModule.User), ManageAllRoles: true);
 
 -- Dados persistentes: nenhum perfil altera pedidos/comentários/histórico pelo cliente.
 grant read * on entity CampusFix.Pedido to CampusFix.Utilizador

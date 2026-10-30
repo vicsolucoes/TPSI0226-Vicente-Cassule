@@ -1,9 +1,14 @@
 name: CampusFix Mendix
 on:
   push:
-    branches: ["campusfix/mendix"]
+    branches: ["campusfix/mendix", "main"]
     paths:
-      - "CampusFix/**"
+      - "CampusFix/mdlsource/**"
+      - "CampusFix/scripts/**"
+      - "CampusFix/tests/**"
+      - "CampusFix/theme/**"
+      - "CampusFix/*.mpr"
+      - "CampusFix/mprcontents/**"
       - ".github/workflows/campusfix.yml"
   workflow_dispatch:
 permissions:
@@ -21,7 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: campusfix/mendix
+          ref: ${{ github.ref_name }}
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -50,6 +55,8 @@ jobs:
           else
             "$RUNNER_TEMP/mxcli" -p CampusFix/CampusFix.mpr -c "list modules"
           fi
+      - name: Executar aplicação e testar interface dos três perfis
+        run: bash CampusFix/scripts/ui-ci.sh "$RUNNER_TEMP/mxcli"
       - name: Guardar projecto nativo na branch
         run: |
           git config user.name "CampusFix CI"
@@ -57,7 +64,7 @@ jobs:
           git add CampusFix
           if ! git diff --cached --quiet; then
             git commit -m "Gerar e verificar modelo Mendix do CampusFix [skip ci]"
-            git push origin HEAD:campusfix/mendix
+            git push origin "HEAD:${{ github.ref_name }}"
           fi
       - uses: actions/upload-artifact@v4
         if: always()
@@ -71,3 +78,4 @@ jobs:
             CampusFix/mdlsource
           if-no-files-found: warn
           retention-days: 30
+
