@@ -1,0 +1,73 @@
+name: CampusFix Mendix
+on:
+  push:
+    branches: ["campusfix/mendix"]
+    paths:
+      - "CampusFix/**"
+      - ".github/workflows/campusfix.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: campusfix-mendix
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      MXCLI_VERSION: v0.28.0
+      MENDIX_VERSION: 11.6.0
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: campusfix/mendix
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Instalar mxcli com verificação SHA256
+        run: |
+          curl --fail --location --retry 2 --output "$RUNNER_TEMP/mxcli" "https://github.com/mendixlabs/mxcli/releases/download/$MXCLI_VERSION/mxcli-linux-amd64"
+          printf '%s  %s\n' '7a1cb61f9e5e28c09f3c1247446cc611f6deca781355b93c5c6a29fd29d4e3ee' "$RUNNER_TEMP/mxcli" | sha256sum --check
+          chmod +x "$RUNNER_TEMP/mxcli"
+          "$RUNNER_TEMP/mxcli" --version
+      - name: Criar projecto Mendix nativo
+        run: |
+          if [ ! -f CampusFix/CampusFix.mpr ]; then
+            mkdir -p "$RUNNER_TEMP/campusfix-bootstrap" CampusFix
+            cd "$RUNNER_TEMP/campusfix-bootstrap"
+            "$RUNNER_TEMP/mxcli" new CampusFix --version "$MENDIX_VERSION" --theme signal
+            rsync -a --ignore-existing --exclude='.git' --exclude='mxcli' --exclude='.ai-context' --exclude='.claude' --exclude='.opencode' --exclude='AGENTS.md' --exclude='CLAUDE.md' CampusFix/ "$GITHUB_WORKSPACE/CampusFix/"
+          fi
+      - name: Aplicar fontes e verificar projecto
+        run: |
+          if [ -f CampusFix/scripts/build-ci.sh ]; then
+            bash CampusFix/scripts/build-ci.sh "$RUNNER_TEMP/mxcli"
+          else
+            "$RUNNER_TEMP/mxcli" -p CampusFix/CampusFix.mpr -c "list modules"
+          fi
+      - name: Guardar projecto nativo na branch
+        run: |
+          git config user.name "CampusFix CI"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CampusFix
+          if ! git diff --cached --quiet; then
+            git commit -m "Gerar e verificar modelo Mendix do CampusFix [skip ci]"
+            git push origin HEAD:campusfix/mendix
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: CampusFix-Mendix
+          path: |
+            CampusFix/*.mpr
+            CampusFix/mprcontents
+            CampusFix/docs
+            CampusFix/reports
+            CampusFix/mdlsource
+          if-no-files-found: warn
+          retention-days: 30
