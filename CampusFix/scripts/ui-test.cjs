@@ -17,11 +17,11 @@ async function login(user) {
   lastPage = page;
   const packets = [];
   page.on('request', request => {
-    if (!request.url().includes('/xas/')) return;
+    if (!request.url().startsWith(base + '/') || request.method() !== 'POST') return;
     try {
       const data = request.postDataJSON();
       if (data && !/login|password/i.test(JSON.stringify(data))) {
-        packets.push({ data, headers: request.headers(), url: request.url() });
+        packets.push({ data, headers: request.headers(), url: request.url(), responseBody: request.response().then(async r => { const text = r ? await r.text() : ''; try { return JSON.stringify(JSON.parse(text)); } catch { return text; } }).catch(() => '') });
       }
     } catch {}
   });
@@ -29,7 +29,7 @@ async function login(user) {
   const username = page.locator('input[name="username"], input#usernameInput, input[autocomplete="username"]');
   await username.first().waitFor({ timeout: 30000 });
   await username.first().fill(user);
-  await page.locator('input[type="password"]').first().fill('CampusFix.Test!2026');
+  await page.locator('input[type="password"]').first().fill(process.env.CAMPUSFIX_TEST_PASSWORD);
   await page.getByRole('button', { name: /sign in|log in|iniciar sessão|entrar/i }).first().click();
   await assertText(page, 'CAMPUSFIX');
   results.push({ teste: `Autenticação ${user}`, resultado: 'PASS' });
@@ -89,10 +89,10 @@ async function screenshot(page, name) {
   await assertText(admin.page, 'Computador da sala 12 não liga');
   // Reutiliza a consulta real da grelha administrativa com a sessão de B.
   // A consulta sem filtro de proprietário tem de continuar limitada por Entity Access.
-  const adminQuery = [...admin.packets].reverse().find(p =>
-    /CampusFix\.Pedido/.test(JSON.stringify(p.data)) && /retrieve|query|xpath/i.test(JSON.stringify(p.data)));
+  const answered = await Promise.all(admin.packets.map(async p => ({ ...p, body: await p.responseBody })));
+  const adminQuery = answered.reverse().find(p => p.body.includes('Computador da sala 12 não liga')); 
   const userPacket = [...b.packets].reverse().find(p => p.headers);
-  if (!adminQuery || !userPacket) throw new Error('Não foi possível identificar a consulta real para o teste direto de Entity Access.');
+  if (!adminQuery || !userPacket) throw new Error('Consulta de controlo não identificada; pacotes admin=' + admin.packets.length + ', B=' + b.packets.length);
   const headers = { ...userPacket.headers };
   for (const k of ['cookie', 'host', 'content-length', 'connection']) delete headers[k];
   const adminResponse = await admin.context.request.post(adminQuery.url, { headers: adminQuery.headers, data: adminQuery.data });
@@ -129,7 +129,8 @@ async function screenshot(page, name) {
 })().catch(async error => {
   if (lastPage) {
     await lastPage.screenshot({ path: path.join(out, 'falha-interface.png'), fullPage: true }).catch(() => {});
-    fs.writeFileSync(path.join(out, 'falha-interface.txt'), (await lastPage.locator('body').ariaSnapshot().catch(() => '')) + '\n' + (await lastPage.locator('body').innerText().catch(() => '')) + '\n' + error.stack);
+    const debug = (await lastPage.locator('body').ariaSnapshot().catch(() => '')) + '\n' + (await lastPage.locator('body').innerText().catch(() => '')) + '\n' + error.stack;
+    fs.writeFileSync(path.join(out, 'falha-interface.txt'), debug.split(process.env.CAMPUSFIX_TEST_PASSWORD || '__no_secret__').join('[redacted]'));
   }
   console.error(error.stack);
   process.exitCode = 1;

@@ -11,12 +11,13 @@ create or modify association CampusFixTest.Fixture_Categoria from CampusFixTest.
 /** Dados descartáveis; não cria sessões nem usa contas pessoais. */
 create or modify microflow CampusFixTest.CriarFixture () returns CampusFixTest.Fixture
 begin
+  declare $FixturePassword String = 'Cf9!' + toString(random()) + toString(random()) + toString(random());
   retrieve $RoleU from System.UserRole where [Name = 'Utilizador'];
   retrieve $RoleT from System.UserRole where [Name = 'Tecnico'];
-  $A = create Administration.Account (Name = 'campusfix_teste_a', FullName = 'Utilizador A', Active = true, Password = 'CampusFix.Test!2026', System.UserRoles = $RoleU);
-  $B = create Administration.Account (Name = 'campusfix_teste_b', FullName = 'Utilizador B', Active = true, Password = 'CampusFix.Test!2026', System.UserRoles = $RoleU);
-  $T1 = create Administration.Account (Name = 'campusfix_teste_t1', FullName = 'Técnico A', Active = true, Password = 'CampusFix.Test!2026', System.UserRoles = $RoleT);
-  $T2 = create Administration.Account (Name = 'campusfix_teste_t2', FullName = 'Técnico B', Active = true, Password = 'CampusFix.Test!2026', System.UserRoles = $RoleT);
+  $A = create Administration.Account (Name = 'campusfix_teste_a', FullName = 'Utilizador A', Active = true, Password = $FixturePassword, System.UserRoles = $RoleU);
+  $B = create Administration.Account (Name = 'campusfix_teste_b', FullName = 'Utilizador B', Active = true, Password = $FixturePassword, System.UserRoles = $RoleU);
+  $T1 = create Administration.Account (Name = 'campusfix_teste_t1', FullName = 'Técnico A', Active = true, Password = $FixturePassword, System.UserRoles = $RoleT);
+  $T2 = create Administration.Account (Name = 'campusfix_teste_t2', FullName = 'Técnico B', Active = true, Password = $FixturePassword, System.UserRoles = $RoleT);
   commit $A; commit $B; commit $T1; commit $T2;
   $Categoria = create CampusFix.Categoria (Nome = 'Categoria de teste', Ativa = true);
   commit $Categoria;

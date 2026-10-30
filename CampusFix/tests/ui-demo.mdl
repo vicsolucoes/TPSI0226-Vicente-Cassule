@@ -1,8 +1,4 @@
 mdl 1;
--- Usado exclusivamente numa cópia descartável pela CI, em loopback.
--- O projecto entregue mantém EnableDemoUsers = false.
-alter app security (EnableDemoUsers: true);
-create or modify demo user 'cf_aluno_a' (Password: 'CampusFix.Test!2026', Entity: Administration.Account, UserRoles: (Utilizador));
-create or modify demo user 'cf_aluno_b' (Password: 'CampusFix.Test!2026', Entity: Administration.Account, UserRoles: (Utilizador));
-create or modify demo user 'cf_tecnico' (Password: 'CampusFix.Test!2026', Entity: Administration.Account, UserRoles: (Tecnico));
-create or modify demo user 'cf_admin' (Password: 'CampusFix.Test!2026', Entity: Administration.Account, UserRoles: (Administrator));
+-- As contas fictícias cf_aluno_a, cf_aluno_b, cf_tecnico e cf_admin são criadas
+-- apenas na cópia descartável pelo script scripts/ui-ci.sh.
+-- As palavras-passe são geradas com secrets.token_urlsafe e não são versionadas.
