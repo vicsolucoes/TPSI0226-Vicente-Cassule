@@ -29,6 +29,7 @@ for name, role in roles:
     lines.append(f"create or modify demo user '{name}' (Password: '{password}', Entity: Administration.Account, UserRoles: ({role}));")
 (root / '.mxcli' / 'ui-demo-runtime.mdl').write_text('\n'.join(lines))
 RUNTIME_ACCOUNTS
+python3 "$APP_DIR/scripts/sanitize-model.py" "$UI_APP/CampusFix.mpr" --prepare-runtime
 "$MXCLI" exec "$UI_APP/.mxcli/ui-demo-runtime.mdl" -p "$UI_APP/CampusFix.mpr"
 "$MXCLI" run --local --setup --db-type hsqldb -p "$UI_APP/CampusFix.mpr"
 "$MXCLI" run --local --detach --db-type hsqldb -p "$UI_APP/CampusFix.mpr"

@@ -9,6 +9,7 @@ import base64
 import hashlib
 from pathlib import Path
 import sqlite3
+import secrets
 import struct
 import uuid
 
@@ -62,7 +63,7 @@ def entries(data, offset=0):
     return result, size
 
 
-def strip_credentials(data):
+def strip_credentials(data, prepared_password=None):
     fields, size = entries(data)
     if size != len(data):
         raise ValueError('Trailing BSON bytes')
@@ -86,7 +87,8 @@ def strip_credentials(data):
         elif key == 'AdminPassword':
             if field['kind'] != 2:
                 raise ValueError('Unexpected AdminPassword representation')
-            parts.append(prefix + struct.pack('<i', 1) + b'\0')
+            password = (prepared_password or '').encode('utf-8')
+            parts.append(prefix + struct.pack('<i', len(password) + 1) + password + b'\0')
             removed += int(bool(field['value']))
         else:
             parts.append(data[field['begin']:field['end']])
@@ -94,7 +96,7 @@ def strip_credentials(data):
     cleaned = struct.pack('<i', len(body) + 4) + body
     checked, _ = entries(cleaned)
     after = {x['key']: x for x in checked}
-    if after['AdminPassword']['value'] != '' or len(after['DemoUsers']['value']) != 1:
+    if after['AdminPassword']['value'] != (prepared_password or '') or len(after['DemoUsers']['value']) != 1:
         raise ValueError('Credential removal failed')
     if after['EnableDemoUsers']['value'] or after['EnableGuestAccess']['value']:
         raise ValueError('Delivered project must not allow demo or anonymous access')
@@ -110,8 +112,10 @@ def strip_credentials(data):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('project', type=Path)
+    parser.add_argument('--prepare-runtime', action='store_true', help='Ephemeral credential for local validation; never export this copy')
     args = parser.parse_args()
     project = args.project.resolve()
+    runtime_password = secrets.token_urlsafe(24) + 'Aa9!' if args.prepare_runtime else None
     contents = project.parent / 'mprcontents'
     if not contents.is_dir():
         raise SystemExit('Expected an MPRv2 project with mprcontents')
@@ -120,7 +124,7 @@ def main():
         data = unit.read_bytes()
         if b'Security$ProjectSecurity' not in data:
             continue
-        cleaned, removed = strip_credentials(data)
+        cleaned, removed = strip_credentials(data, runtime_password)
         if cleaned == data and not removed:
             found = True
             continue
@@ -140,7 +144,10 @@ def main():
         found = True
     if not found:
         raise SystemExit('ProjectSecurity unit not found')
-    print('Verified: no administrator password or demo account definitions in delivered model.')
+    if args.prepare_runtime:
+        print('Prepared an ephemeral administrator credential for isolated checks; no demo definitions.')
+    else:
+        print('Verified: no administrator password or demo account definitions in delivered model.')
 
 
 if __name__ == '__main__':
