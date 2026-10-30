@@ -1,0 +1,75 @@
+WARNING: This is a vibe-coded PoC, alpha quality, use with caution.
+Configuration "Default" sets no constant values; using each constant's default.
+Parsing test files...
+  Found 16 test(s) in 1 file(s)
+Generating test endpoint and test microflows...
+Injecting test endpoint into project...
+Connected to: /home/runner/work/TPSI0226-Vicente-Cassule/TPSI0226-Vicente-Cassule/CampusFix/CampusFix.mpr (Mendix 11.6.0)
+Created module: MxTest
+Created java action: MxTest.RegisterTestEndpoint
+Created microflow: MxTest.RegisterEndpoint
+Connected to: /home/runner/work/TPSI0226-Vicente-Cassule/TPSI0226-Vicente-Cassule/CampusFix/CampusFix.mpr (Mendix 11.6.0)
+[36m(no module)[0m
+-----------
+  [33m⚠[0m line 259: `$n = <function>($List, …)` (count) is deprecated; write `$n = <function> $List …` — same meaning. Refused from `mdl 2`. (mxcli help MDL-DEPR004) [2m[MDL-DEPR004][0m
+      at [2m[0m
+      [32m→[0m Rewrite the call form to statement form: count $L; sum|average|minimum|maximum $L by Attr (for $L.Attr) or of <expr>; all|any $L where <expr>; reduce $L from <initial> as <type> using <expr>. An aggregate is one Studio Pro Aggregate list activity whose operand is a variable.
+
+  [33m⚠[0m line 540: `$n = <function>($List, …)` (count) is deprecated; write `$n = <function> $List …` — same meaning. Refused from `mdl 2`. (mxcli help MDL-DEPR004) [2m[MDL-DEPR004][0m
+      at [2m[0m
+      [32m→[0m Rewrite the call form to statement form: count $L; sum|average|minimum|maximum $L by Attr (for $L.Attr) or of <expr>; all|any $L where <expr>; reduce $L from <initial> as <type> using <expr>. An aggregate is one Studio Pro Aggregate list activity whose operand is a variable.
+
+2 issues: 0 errors, 2 warnings, 0 info
+Module 'MxTest' already exists
+Created microflow: MxTest.Test_test_1
+Created microflow: MxTest.Test_test_2
+Created microflow: MxTest.Test_test_3
+Created microflow: MxTest.Test_test_4
+Created microflow: MxTest.Test_test_5
+Created microflow: MxTest.Test_test_6
+Created microflow: MxTest.Test_test_7
+Created microflow: MxTest.Test_test_8
+Created microflow: MxTest.Test_test_9
+Created microflow: MxTest.Test_test_10
+Created microflow: MxTest.Test_test_11
+Created microflow: MxTest.Test_test_12
+Created microflow: MxTest.Test_test_13
+Created microflow: MxTest.Test_test_14
+Created microflow: MxTest.Test_test_15
+Created microflow: MxTest.Test_test_16
+  After-startup set to MxTest.RegisterEndpoint (registers the endpoint; runs no tests; this project has no after-startup microflow of its own)
+Starting local runtime (no Docker)...
+  MxBuild 11.6.0 already cached at /home/runner/.mxcli/mxbuild/11.6.0/modeler/mxbuild
+  Downloading Mendix runtime 11.6.0...
+  URL: https://cdn.mendix.com/runtime/mendix-11.6.0.tar.gz
+  Size: 325.4 MB
+  Extracting to /home/runner/.mxcli/runtime/11.6.0...
+  Runtime cached at /home/runner/.mxcli/runtime/11.6.0
+Building project (mxbuild --serve)...
+Runtime started; app serving at http://127.0.0.1:8081/
+Running 16 test(s) over the test endpoint...
+Cleaning up...
+  project restored
+
+Test Results: regras
+============================================================
+  PASS  RF02 criação com autor data e estado automáticos (1.403s, 5 assertions)
+  PASS  RF03 outro utilizador não pode consultar o pedido (1.27s, 1 assertion)
+  PASS  RF05 utilizador comum não pode assumir pedido (1.261s, 2 assertions)
+  PASS  RF05 técnico assume e o segundo técnico não substitui (1.258s, 4 assertions)
+  PASS  RF05 só o técnico atribuído inicia tratamento (1.257s, 4 assertions)
+  PASS  RF07 concluir regista data nota e não repete a conclusão (1.297s, 5 assertions)
+  PASS  RF07 impede conclusão sem nota de resolução (1.237s, 2 assertions)
+  PASS  RF04 não edita pedido resolvido (1.256s, 3 assertions)
+  PASS  RF04 não edita pedido de outro autor (1.227s, 1 assertion)
+  PASS  RF04 edição válida mantém autor e data de criação (1.232s, 4 assertions)
+  PASS  RF06 comentário guarda pedido autor e data certos (1.23s, 4 assertions)
+  PASS  RF06 rejeita comentário de outro utilizador (1.227s, 2 assertions)
+  PASS  RF08 categoria inativa não aceita novos pedidos (1.218s, 1 assertion)
+  PASS  Extra cancelamento exclusivo do autor e estado terminal (1.225s, 5 assertions)
+  PASS  Extra edição desatualizada é recusada (1.238s, 1 assertion)
+  PASS  Validação rejeita título demasiado curto (1ms, 1 assertion)
+------------------------------------------------------------
+Total: 16  Passed: 16  Failed: 0  Skipped: 0  Time: 18.867s
+All tests passed.
+JUnit XML written to: reports/testes.xml

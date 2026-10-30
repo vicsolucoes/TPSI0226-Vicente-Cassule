@@ -1,0 +1,49 @@
+{
+  "executado_em": "2026-10-30T18:40:28.144Z",
+  "resultados": [
+    {
+      "teste": "Autenticação cf_admin",
+      "resultado": "PASS"
+    },
+    {
+      "teste": "RF08 administrador cria categoria",
+      "resultado": "PASS"
+    },
+    {
+      "teste": "Autenticação cf_aluno_a",
+      "resultado": "PASS"
+    },
+    {
+      "teste": "RF02 RF03 RF06 utilizador cria consulta e comenta",
+      "resultado": "PASS"
+    },
+    {
+      "teste": "Autenticação cf_aluno_b",
+      "resultado": "PASS"
+    },
+    {
+      "teste": "RF10 dashboard de B não conta pedidos de A",
+      "resultado": "PASS"
+    },
+    {
+      "teste": "RF03 RF01 segundo utilizador não vê pedido nem administração",
+      "resultado": "PASS"
+    },
+    {
+      "teste": "Segurança: consulta administrativa repetida com sessão B não expõe o pedido",
+      "resultado": "PASS"
+    },
+    {
+      "teste": "Autenticação cf_tecnico",
+      "resultado": "PASS"
+    },
+    {
+      "teste": "RF05 RF07 técnico assume trata e conclui com nota",
+      "resultado": "PASS"
+    },
+    {
+      "teste": "RF04 pedido resolvido fica fechado para o autor",
+      "resultado": "PASS"
+    }
+  ]
+}

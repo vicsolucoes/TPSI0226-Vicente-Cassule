@@ -1,0 +1,40 @@
+| Qualified Name                      | Module         | Name                 | Excluded | Folder                | Title             | url | Params |
+|-------------------------------------|----------------|----------------------|----------|-----------------------|-------------------|-----|--------|
+| Administration.Account_Edit         | Administration | Account_Edit         | false    | User Management/Admin | Edit Account      |     | 1      |
+| Administration.Account_New          | Administration | Account_New          | false    | User Management/Admin | New Account       |     | 1      |
+| Administration.Account_Overview     | Administration | Account_Overview     | false    | User Management/Admin | Accounts          |     | 0      |
+| Administration.ActiveSessions       | Administration | ActiveSessions       | false    | System Administration | Active Sessions   |     | 0      |
+| Administration.ChangeMyPasswordForm | Administration | ChangeMyPasswordForm | false    | User Management/User  | Change Password   |     | 1      |
+| Administration.ChangePasswordForm   | Administration | ChangePasswordForm   | false    | User Management/Admin | Change Password   |     | 1      |
+| Administration.MyAccount            | Administration | MyAccount            | false    | User Management/User  | My Account        |     | 1      |
+| Administration.RuntimeInstances     | Administration | RuntimeInstances     | false    | System Administration | Runtime Instances |     | 0      |
+| Administration.ScheduledEvents      | Administration | ScheduledEvents      | false    | System Administration | Scheduled Events  |     | 0      |
+
+(9 pages)
+| Qualified Name                  | Module            | Role          | Description |
+|---------------------------------|-------------------|---------------|-------------|
+| Atlas_Web_Content.Anonymous     | Atlas_Web_Content | Anonymous     |             |
+| Atlas_Web_Content.Administrator | Atlas_Web_Content | Administrator |             |
+| Atlas_Web_Content.User          | Atlas_Web_Content | User          |             |
+| Administration.Administrator    | Administration    | Administrator |             |
+| Administration.User             | Administration    | User          |             |
+| FeedbackModule.User             | FeedbackModule    | User          |             |
+| NanoflowCommons.User            | NanoflowCommons   | User          |             |
+| Atlas_Core.Administrator        | Atlas_Core        | Administrator |             |
+| Atlas_Core.User                 | Atlas_Core        | User          |             |
+| MyFirstModule.User              | MyFirstModule     | User          |             |
+| DataWidgets.User                | DataWidgets       | User          |             |
+| CampusFix.Utilizador            | CampusFix         | Utilizador    |             |
+| CampusFix.Tecnico               | CampusFix         | Tecnico       |             |
+| CampusFix.Administrador         | CampusFix         | Administrador |             |
+
+(14 module roles)
+mdl 1;
+-- navigation PROFILE: Responsive
+--   Kind: Responsive
+create or modify navigation Responsive
+  home page MyFirstModule.Home_Web
+{
+  menu item 'Home' ( OnClick: show page MyFirstModule.Home_Web with (DisabledDuringExecution: false), Icon: glyph 57377 )
+};
+
