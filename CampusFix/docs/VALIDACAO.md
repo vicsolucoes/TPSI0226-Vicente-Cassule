@@ -1,19 +1,67 @@
 # Resultado da validação
 
-Execução verificada em **30/10/2026**, no workflow [CampusFix Mendix, execução 13](https://github.com/vicsolucoes/TPSI0226-Vicente-Cassule/actions/runs/41108379982), concluído com sucesso.
+Validação de **04/11/2026** sobre as fontes do commit `8700da2` (branch `campusfix/mendix`). Há duas execuções independentes, com papéis diferentes.
+
+## 1. GitHub Actions — Mendix 11.6.0 (versão oficial do projecto)
+
+[CampusFix Mendix, execução 41867763370](https://github.com/vicsolucoes/TPSI0226-Vicente-Cassule/actions/runs/41867763370), concluída com sucesso em Ubuntu 22.04, mxcli v0.28.0 (SHA256 verificado), MxBuild e runtime 11.6.0, Java 21, HSQLDB descartável.
 
 | Verificação | Resultado | Evidência |
 | --- | --- | --- |
 | Mendix 11.6.0 / MxBuild | 0 erros | [mendix-check.log](../reports/mendix-check.log) |
-| Regras no runtime Mendix, base HSQLDB descartável | 16 testes, 45 verificações, 0 falhas | [testes.xml](../reports/testes.xml), [testes.log](../reports/testes.log) |
-| Navegador Chromium, quatro sessões independentes | 11 verificações aprovadas | [testes-interface.json](evidencias/testes-interface.json) |
-| Análise estática final | 0 erros, 0 avisos, 5 notas informativas | [lint.txt](../reports/lint.txt) |
-| Demonstração visual | 5 capturas reais | [Galeria](evidencias/README.md) |
+| Regras no runtime Mendix | 16 testes, 45 verificações, 0 falhas | [testes.xml](../reports/testes.xml), [testes.log](../reports/testes.log) |
+| Navegador Chromium, quatro sessões independentes | 21 verificações aprovadas | [testes-interface.json](evidencias/testes-interface.json) |
+| Análise estática | 0 erros, 0 avisos, 5 notas informativas | [lint.txt](../reports/lint.txt) |
+| Demonstração visual | 5 capturas reais desta execução | [Galeria](evidencias/README.md) |
 
-O percurso no navegador criou uma categoria, registou e comentou um pedido, confirmou que outro utilizador não o vê nem o conta no painel, repetiu uma consulta administrativa com a sessão desse utilizador e confirmou o isolamento por Entity Access. O técnico assumiu, iniciou tratamento e concluiu o pedido com nota; o autor consultou a resolução e já não podia editar nem comentar.
+Na CI as contas `cf_*` são contas demo efémeras com palavras-passe aleatórias, criadas apenas numa cópia descartável.
 
-A verificação nativa e os testes foram executados com configuração administrativa efémera. O projecto versionado é exportado **sem palavra-passe administrativa nem definições de contas demo**. É necessário definir a própria palavra-passe no Studio Pro antes de executar; sem essa configuração, o erro CE0129 é esperado. O acesso anónimo e os utilizadores demo permanecem desativados no modelo entregue. O módulo de fixtures e o endpoint temporário dos testes não fazem parte do modelo exportado.
+## 2. Execução local no computador do aluno — Windows 11
 
-Foram conferidos os hashes dos 424 ficheiros `.mxunit` com o índice SQLite do `.mpr`: sem divergências. O modelo e as páginas usados nos testes são documentos Mendix nativos.
+| Item | Valor |
+| --- | --- |
+| Sistema | Windows 11 Home 10.0.26300 |
+| Ferramentas | mxcli v0.28.0 (SHA256 verificado), Java Temurin 21.0.13, Playwright 1.56.1 / Chromium |
+| Mendix usado | **11.12.5** (único Studio Pro instalado), numa cópia privada descartável convertida com `mx convert` |
+| Base de dados | HSQLDB local da cópia |
+| Endereço | `http://127.0.0.1:8080` |
 
-As notas do analisador incluem quatro referências aos filtros XPath intencionais nas listas e uma limitação da representação textual `DESCRIBE` de um grafo de validação. Não indicam erros de compilação. As limitações funcionais e de concorrência estão em [MODELO_E_SEGURANCA.md](MODELO_E_SEGURANCA.md).
+Procedimento: cópia privada fora do repositório; palavra-passe privada do `MxAdmin` definida com a função `strip_credentials` de `scripts/sanitize-model.py`; arranque com `mxcli run --local --db-type hsqldb`; criação do `MxAdmin` pela API M2EE `create_admin_user` (o passo que o Studio Pro faz ao executar). O teste `scripts/ui-test.cjs` correu com `CAMPUSFIX_CREATE_ACCOUNTS=1`: o administrador criou as contas `cf_aluno_a`, `cf_aluno_b` e `cf_tecnico` na página **Utilizadores e perfis**, sem contas demo.
+
+Resultado: **22 verificações aprovadas**, incluindo a criação de contas e perfis pelo administrador. O login de cada perfil e a interface foram observados num navegador real. Nenhuma credencial foi registada no repositório.
+
+Falhas reais encontradas e corrigidas nesta validação:
+
+1. O detalhe do pedido não mostrava a categoria, exigida pelo enunciado (secção 7). Corrigido em `Pedido_Detalhe`. A área do técnico também passou a mostrar a categoria.
+2. O botão **Cancelar** do formulário de categoria não fechava a página. Corrigido para `cancel changes close page`.
+3. Num checkout Windows com CRLF, o mxcli duplicava regras de acesso com XPath multilinha. O repositório passou a fixar LF nos `.mdl` (`.gitattributes`). O modelo publicado não contém essas regras duplicadas: só mudaram as três páginas.
+
+## Cenários mínimos verificados
+
+| Cenário | CI 11.6.0 | Local |
+| --- | --- | --- |
+| A cria um pedido e consulta-o novamente | PASS | PASS |
+| B não vê nem obtém o pedido de A (interface e consulta repetida) | PASS | PASS |
+| Painel de B não conta pedidos de A | PASS | PASS |
+| Utilizador comum sem menu nem acesso direto a categorias/administração | PASS | PASS |
+| Administrador cria, edita e desativa categoria (valor persistido reaberto) | PASS | PASS |
+| Categoria inativa não aparece num novo pedido | PASS | PASS |
+| Técnico assume e fica identificado como responsável | PASS | PASS |
+| Técnico inicia tratamento e conclui com nota | PASS | PASS |
+| Conclusão regista data | PASS | PASS |
+| Pedido resolvido sem Editar, Comentar nem Cancelar | PASS | PASS |
+| Comentários com o pedido e autor corretos | PASS | PASS |
+| Pesquisa por título e filtro por estado | PASS | PASS |
+| Navegação dos três perfis sem diálogos de erro | PASS | PASS |
+| Administrador cria contas e atribui perfis | — | PASS |
+
+A ligação persistida dos comentários ao autor (`Comentario_Autor`) e ao pedido é verificada pelo teste de regras *RF06 comentário guarda pedido autor e data certos*. Na interface, os dados persistidos são relidos noutra sessão: o autor abre o pedido depois de o técnico o resolver.
+
+## Limitações desta validação
+
+- A execução local **não usou o Studio Pro 11.6.0**: o instalador oficial assinado está em `Downloads\Mendix-11.6.0-Setup.exe`, mas a instalação precisa de aprovação de administrador do Windows, que não foi dada nesta sessão. A versão 11.6.0 foi validada na CI; localmente foi usada a 11.12.5 numa cópia convertida, nunca no projecto entregue.
+- Na execução local em 11.12.5, a coluna *Roles* da grelha do módulo Administration mostra o aviso *Unable to get filter store*. Pertence ao módulo Administration do Marketplace, não ao CampusFix, e não impediu a criação de contas. Não foi verificado em 11.6.0.
+- As notas informativas do analisador referem os filtros XPath intencionais das listas e uma limitação da representação textual de um microflow. Não são erros.
+- As limitações funcionais estão em [MODELO_E_SEGURANCA.md](MODELO_E_SEGURANCA.md).
+
+O projecto versionado não tem palavra-passe administrativa nem definições de contas demo (`scripts/sanitize-model.py` confirma). Sem configurar o administrador no Studio Pro, o erro CE0129 é esperado.

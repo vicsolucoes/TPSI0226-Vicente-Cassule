@@ -10,13 +10,37 @@ Versões fixadas: Mendix Studio Pro **11.6.0**, mxcli **v0.28.0**, Java **21**.
 
 Projecto Mendix nativo com modelo de domínio, páginas, microflows, permissões de entidades, quatro indicadores e testes automatizados. Os relatórios de execução ficam em `reports/` e as capturas reais em [docs/evidencias](docs/evidencias). O histórico de [GitHub Actions](https://github.com/vicsolucoes/TPSI0226-Vicente-Cassule/actions/workflows/campusfix.yml) conserva a compilação e os testes de cada alteração.
 
-Validação de 30/10/2026: **0 erros na verificação nativa**, **16 testes de regras aprovados (45 verificações)** e **11 verificações no navegador aprovadas**, com cinco capturas reais. Ver [resultado e condições da validação](docs/VALIDACAO.md).
+Validação de 04/11/2026 com Mendix 11.6.0 no GitHub Actions: **0 erros na verificação nativa**, **16 testes de regras aprovados (45 verificações)** e **21 verificações no navegador aprovadas**, com cinco capturas reais. A aplicação foi também executada no Windows do aluno (22 verificações, incluindo a criação de contas pelo administrador). Ver [resultado, ambiente e limitações da validação](docs/VALIDACAO.md).
 
 ## Objectivo e perfis
 
 - Utilizador: cria, consulta e corrige os próprios pedidos abertos; comenta e cancela.
 - Técnico: consulta pedidos disponíveis ou atribuídos a si; assume, trata, comenta e conclui com nota de resolução.
 - Administrador: consulta todos os pedidos e gere categorias e contas através do módulo Administration.
+
+## Funcionalidades implementadas
+
+| Requisito | Onde |
+| --- | --- |
+| RF01 autenticação e navegação por perfil | Login Mendix; menu Responsive filtrado por permissões |
+| RF02 criar pedido com data e estado automáticos | Novo pedido → `ACT_Pedido_Guardar` |
+| RF03 consultar os meus pedidos e o detalhe | Os meus pedidos → Abrir |
+| RF04 editar pedido aberto | Detalhe → Editar (só autor, só estados abertos) |
+| RF05 técnico assume e trata | Área do técnico → Assumir, Iniciar tratamento |
+| RF06 comentários | Detalhe → Acrescentar comentário (autor e data no servidor) |
+| RF07 concluir | Detalhe → Concluir pedido com nota; regista DataConclusao |
+| RF08 categorias | Categorias → criar, editar, desativar |
+| RF09 pesquisa e filtros | Grelhas com pesquisa por título e filtros por estado e prioridade |
+| RF10 dashboard | Painel inicial com quatro indicadores |
+
+## Funcionalidades opcionais
+
+- Localização (edifício/sala) no pedido.
+- Histórico de alterações de estado com autor e data.
+- Validações antes de concluir: técnico responsável, estado aberto e nota de resolução obrigatória.
+- Quatro indicadores no painel, calculados só sobre os pedidos visíveis ao perfil.
+- Cancelamento pelo autor e controlo de versão que recusa guardar um formulário desatualizado.
+- Página de todos os pedidos para o administrador.
 
 As fontes `mdlsource/*.mdl` usam `mdl 1;` e descrevem documentos Mendix nativos. O `.mpr` e a pasta `mprcontents/` são o projecto a abrir no Studio Pro; os scripts são fontes reproduzíveis.
 
@@ -26,7 +50,7 @@ As fontes `mdlsource/*.mdl` usam `mdl 1;` e descrevem documentos Mendix nativos.
 2. Instalar o Mendix Studio Pro **11.6.0** e abrir `CampusFix/CampusFix.mpr`.
 3. **Antes de executar**, em **App > Security > Administrator**, definir uma palavra-passe pessoal para o administrador `MxAdmin`, com pelo menos 12 caracteres e respeitando a política indicada pelo Studio Pro. O modelo entregue não guarda palavras-passe nem definições de contas demo. Até configurar este valor, o Studio Pro apresenta o erro de configuração CE0129.
 4. Selecionar **Run locally** e **View App**. Entrar com `MxAdmin` e a palavra-passe que acabaste de definir.
-5. Em **Categorias**, criar pelo menos uma categoria ativa. Em **Utilizadores e perfis**, criar as contas da demonstração, atribuindo o perfil **Utilizador** a um requerente e **Tecnico** a um técnico. Definir as palavras-passe dessas contas na tua base local.
+5. Em **Categorias**, criar pelo menos uma categoria ativa. Em **Utilizadores e perfis** → **New local user**, criar as contas da demonstração: `cf_aluno_a` e `cf_aluno_b` com o perfil **Utilizador** e `cf_tecnico` com o perfil **Tecnico**. Definir as palavras-passe dessas contas na tua base local.
 6. Terminar sessão e entrar como utilizador para criar o primeiro pedido; depois entrar como técnico para o assumir, tratar e concluir.
 
 Não guardar a configuração local com a tua palavra-passe no Git. Antes de versionar o modelo, fechar o Studio Pro e executar `python3 scripts/sanitize-model.py CampusFix.mpr` dentro da pasta CampusFix; voltar a definir a palavra-passe pessoal quando fores executar novamente.
@@ -42,13 +66,16 @@ Estado inicial Novo e data/autor definidos no servidor. Assumir inicia Em análi
 - [Requisitos, testes e comandos para repetir](docs/REQUISITOS_E_TESTES.md)
 - [Modelo, matriz de permissões, estados e limitações](docs/MODELO_E_SEGURANCA.md)
 - [Guião para a defesa do projecto](docs/DEFESA.md)
+- [Entrega: identificação, checklist e mensagem](docs/ENTREGA.md)
 - [Painel inicial](docs/evidencias/01-dashboard.png), [pedidos do utilizador](docs/evidencias/02-meus-pedidos.png), [detalhe e comentário](docs/evidencias/03-detalhe-com-comentario.png), [área técnica](docs/evidencias/04-area-tecnico.png) e [categorias](docs/evidencias/05-categorias.png)
 
 A CI prepara palavras-passe aleatórias apenas durante as verificações e elimina-as do modelo antes da exportação, incluindo em caso de falha. Os testes no navegador usam uma cópia descartável, sessões independentes e dados fictícios. Não é necessário configurar segredos no GitHub para repetir o workflow.
 
 ## Limitações
 
-A versão impede guardar um formulário desatualizado. A atribuição concorrente entre várias instâncias não tem um bloqueio atómico distribuído. Esta versão não inclui reabertura, anexos, notificações por email nem alojamento de produção.
+A versão impede guardar um formulário desatualizado. A atribuição concorrente entre várias instâncias não tem um bloqueio atómico distribuído. Esta versão não inclui reabertura, anexos, notas internas separadas dos comentários, notificações por email nem alojamento de produção. O perfil `User` do modelo inicial Mendix continua a existir e tem as mesmas permissões que `Utilizador`; as contas novas devem usar `Utilizador`.
+
+Os scripts `build-ci.sh` e `ui-ci.sh` correm em Linux (o MxBuild do CDN da Mendix só existe para Linux). Em Windows, usar o Studio Pro 11.6.0 ou o workflow do GitHub Actions.
 
 ## Referências
 

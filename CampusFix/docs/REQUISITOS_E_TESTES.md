@@ -1,37 +1,53 @@
 # Rastreabilidade do enunciado
 
-Fonte: Projeto_Final_Mendix_CampusFix.docx, sete páginas. A confirmação de execução está nos relatórios gerados pela CI, não nesta tabela.
+Fonte: `Projeto_Final_Mendix_CampusFix.docx`, lido na íntegra (secções 1 a 14 e 17; o documento não tem secções 15 e 16). Cada resultado refere uma execução real descrita em [VALIDACAO.md](VALIDACAO.md): **CI** = GitHub Actions com Mendix 11.6.0; **Local** = Windows 11 do aluno, cópia convertida para 11.12.5.
 
-| Requisito | Implementação |
-| --- | --- |
-| RF01 autenticação e navegação | Segurança Production, Administration.Account, perfis Utilizador/Tecnico/Administrator, navegação por permissões |
-| RF02 criar pedido | ACT_Pedido_Novo / ACT_Pedido_Guardar / SUB_Pedido_Guardar |
-| RF03 os meus pedidos | Pedido_Meus, Pedido_Detalhe, restrição por criador nas entidades |
-| RF04 editar pedido aberto | FormularioPedido, verificação de autor/estado/versão no servidor |
-| RF05 técnico | Pedido_Gestao, ACT_Pedido_Assumir, ACT_Pedido_IniciarTratamento |
-| RF06 comentários | FormularioComentario, ACT_Comentario_Registar e autor/data automáticos |
-| RF07 concluir | FormularioResolucao, ACT_Pedido_Concluir e nota/data de resolução |
-| RF08 categorias | Categoria_Overview / Categoria_Formulario e desativação sem eliminação |
-| RF09 pesquisa e filtros | Data Grid: título, estado, prioridade; também categorias por nome/ativa |
-| RF10 dashboard | DS_Resumo: quatro indicadores visíveis calculados com Entity Access |
-| MF01 a MF04 | Ações e submicroflows de criação, atribuição, conclusão e comentário |
-| Regra extra | Cancelamento pelo autor, histórico imutável e controlo de versão da edição |
-| Versionamento | Commits desde a criação da base, implementação e correções verificadas |
-| Evidências | docs/evidencias e reports gerados pelo GitHub Actions |
+## Matriz
+
+| Requisito | Implementação | Teste realizado | Resultado | Pendência |
+| --- | --- | --- | --- | --- |
+| RF01 autenticação e navegação | Segurança Production, `Administration.Account`, perfis Utilizador/Tecnico/Administrator, menu filtrado por permissões | Login dos quatro perfis; menu esperado por perfil; cada item aberto sem erro; B não abre `/p/categorias`, `/p/todos-pedidos`, `/p/gestao-pedidos` | PASS CI e Local | — |
+| RF02 criar pedido | `ACT_Pedido_Novo` / `ACT_Pedido_Guardar` / `SUB_Pedido_Guardar` | Regra *RF02 criação com autor data e estado automáticos*; interface mostra Estado Novo, autor e data | PASS CI e Local | — |
+| RF03 os meus pedidos | `Pedido_Meus`, `Pedido_Detalhe`, Entity Access por criador | A volta a ver o pedido; B não o vê; regra *RF03 outro utilizador não pode consultar* | PASS CI e Local | — |
+| RF04 editar pedido aberto | `FormularioPedido`, autor/estado/versão verificados no servidor | Regras de edição válida, de outro autor, resolvida e desatualizada; interface sem Editar após resolução | PASS CI e Local | — |
+| RF05 técnico | `Pedido_Gestao`, `ACT_Pedido_Assumir`, `ACT_Pedido_IniciarTratamento` | Assumir mostra `cf_tecnico` na grelha e no detalhe; segundo técnico não substitui (regra) | PASS CI e Local | — |
+| RF06 comentários | `ACT_Comentario_Registar`, autor/data no servidor | Comentário do aluno e nota do técnico com autor; não aparece noutro pedido; regra valida `Comentario_Autor`/`Comentario_Pedido` | PASS CI e Local | — |
+| RF07 concluir | `ACT_Pedido_Concluir`, nota obrigatória, `DataConclusao` | Detalhe mostra Resolvido e data de conclusão; regra impede repetir ou concluir sem nota | PASS CI e Local | — |
+| RF08 categorias | `Categoria_Overview` / `Categoria_Formulario`, desativação sem eliminação | Criar, editar e desativar (reaberto para confirmar); inativa fora do combo; regra recusa inativa | PASS CI e Local | — |
+| RF09 pesquisa e filtros | Data Grid com pesquisa por título e filtros de estado e prioridade | Pesquisa "Projetor" e filtro Resolvido em Os meus pedidos | PASS CI e Local | — |
+| RF10 dashboard | `DS_Resumo` com `@applyentityaccess`, quatro indicadores | A vê 1 novo; B vê 0 | PASS CI e Local | — |
+| Detalhe completo (secção 7) | Título, número, estado, prioridade, categoria, autor, técnico, datas, descrição, localização, comentários, histórico | Verificados na interface | PASS CI e Local | Corrigido nesta versão: faltava a categoria |
+| Administração de utilizadores/perfis | Módulo Administration (`Account_Overview`) | Administrador cria três contas com perfis | PASS Local | Não corre na CI, que usa contas demo |
+| MF01 a MF04 | `SUB_Pedido_Guardar`, `SUB_Pedido_Assumir`, `SUB_Pedido_Concluir`, `SUB_Comentario_Registar` | 16 testes de regras | PASS CI | — |
+| Regra extra | Cancelamento pelo autor, histórico imutável, controlo de versão | Regras *Extra cancelamento…* e *Extra edição desatualizada…* | PASS CI | — |
+| Segurança no servidor | Entity Access XPath; `SUB_*` sem acesso de cliente; rascunhos sem escrita nos destinos | Consulta administrativa repetida com a sessão de B não devolve o pedido | PASS CI e Local | — |
+| Versionamento | Commits desde a base até às correções | `git log` no GitHub | Cumprido | — |
+| Evidências | 5 capturas e resultados JSON | Geradas pela execução CI 11.6.0 | Cumprido | — |
+| Execução no Studio Pro 11.6.0 local | — | — | Não executado | Instalar o Studio Pro 11.6.0 (aprovação de administrador do Windows) |
 
 ## Testes automáticos de regras
 
-`tests/regras.test.mdl` contém 16 cenários. Cobrem criação e autoria, isolamento entre utilizadores nas regras, atribuição, técnico errado, resolução com data, nota obrigatória, repetição, bloqueio da edição terminal, edição válida, comentários, categoria inativa, cancelamento e versão desatualizada.
+`tests/regras.test.mdl` contém 16 cenários. Cobrem criação e autoria, isolamento entre utilizadores, atribuição, técnico errado, resolução com data, nota obrigatória, repetição, bloqueio da edição terminal, edição válida, comentários, categoria inativa, cancelamento e versão desatualizada.
 
-São executados pelo runtime Mendix, em base HSQLDB descartável. O módulo CampusFixTest fornece fixtures temporárias e é removido do modelo antes de o projecto ser versionado. Os testes de regras correm em contexto de sistema; por isso, a validação das permissões de entidades é feita separadamente com sessões reais no teste de interface.
+São executados pelo runtime Mendix, em base HSQLDB descartável. O módulo CampusFixTest fornece fixtures temporárias e é removido do modelo antes de o projecto ser versionado. Os testes de regras correm em contexto de sistema; por isso, as permissões de entidades são verificadas separadamente com sessões reais no teste de interface.
 
 ## Teste de interface
 
-`scripts/ui-test.cjs` inicia sessões de utilizador A, utilizador B, técnico e administrador numa cópia descartável da aplicação. Cria uma categoria, regista e comenta um pedido, trata-o e conclui-o, e verifica o bloqueio da edição após resolução. Repete uma consulta real da grelha administrativa com a sessão de B para verificar que as permissões não expõem o pedido de A.
+`scripts/ui-test.cjs` abre sessões independentes de administrador, utilizador A, utilizador B e técnico. Percorre categorias (criar, editar, desativar), criação e comentário do pedido, isolamento de B (interface, painel, consulta repetida e URLs diretos), atribuição, tratamento e conclusão, bloqueio após resolução, autores dos comentários, pesquisa e filtro, e a navegação de cada perfil.
 
-As contas de teste são exclusivamente dados fictícios. `scripts/ui-ci.sh` gera contas e palavras-passe aleatórias apenas numa cópia descartável em loopback. `tests/ui-demo.mdl` documenta este procedimento; não contém credenciais. O administrador necessário para a compilação também recebe uma palavra-passe efémera durante as verificações. Antes da exportação, o modelo é limpo: não tem palavras-passe administrativas nem definições de contas demo, e mantém o acesso anónimo desativado.
+Variáveis:
 
-Os resultados efetivos ficam em `reports/testes.xml`, `reports/testes.log` e `docs/evidencias/testes-interface.json`. As cinco capturas previstas são dashboard, meus pedidos, detalhe com comentário, área técnica e categorias.
+| Variável | Uso |
+| --- | --- |
+| `CAMPUSFIX_TEST_PASSWORD` | Palavra-passe das contas `cf_*` (obrigatória) |
+| `CAMPUSFIX_EVIDENCIAS` | Pasta das capturas e do JSON |
+| `CAMPUSFIX_ADMIN_USER`, `CAMPUSFIX_ADMIN_PASSWORD` | Administrador; por omissão `cf_admin` e a palavra-passe de teste |
+| `CAMPUSFIX_CREATE_ACCOUNTS=1` | O administrador cria `cf_aluno_a`, `cf_aluno_b` e `cf_tecnico` pela interface |
+| `CAMPUSFIX_BASE_URL` | Por omissão `http://127.0.0.1:8080` |
+
+`scripts/ui-ci.sh` gera contas e palavras-passe aleatórias apenas numa cópia descartável em loopback. `tests/ui-demo.mdl` documenta este procedimento; não contém credenciais. Antes da exportação, o modelo é limpo: não tem palavras-passe administrativas nem definições de contas demo, e mantém o acesso anónimo desativado.
+
+Os resultados ficam em `reports/testes.xml`, `reports/testes.log` e `docs/evidencias/testes-interface.json`.
 
 ## Repetir
 
@@ -40,4 +56,4 @@ bash scripts/build-ci.sh /caminho/para/mxcli
 bash scripts/ui-ci.sh /caminho/para/mxcli
 ```
 
-O primeiro comando necessita de mxcli v0.28.0, Java 21, .NET 8 e acesso ao MxBuild 11.6.0. O segundo necessita também de Node.js, acesso aos pacotes do Playwright e permissão para instalar as dependências do Chromium. Ambos usam HSQLDB em ambiente de teste. Em alternativa, usar o workflow CampusFix Mendix no GitHub Actions, que instala estas dependências e verifica o SHA256 do mxcli.
+Estes scripts são para Linux (como a CI): o MxBuild publicado no CDN da Mendix só existe para Linux. Necessitam de mxcli v0.28.0, Java 21, .NET 8, Node.js e Playwright. Em Windows, usar o workflow CampusFix Mendix no GitHub Actions ou o Studio Pro 11.6.0, cujo MxBuild o mxcli encontra automaticamente.
