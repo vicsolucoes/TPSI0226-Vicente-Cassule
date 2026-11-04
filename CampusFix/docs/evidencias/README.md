@@ -1,6 +1,6 @@
 # Evidências da execução
 
-Capturas geradas pelo Playwright a partir da aplicação Mendix 11.6.0 em execução, na [execução 41867763370 do GitHub Actions](https://github.com/vicsolucoes/TPSI0226-Vicente-Cassule/actions/runs/41867763370) de 04/11/2026, com sessões independentes e dados fictícios. O mesmo percurso guarda o resultado em `testes-interface.json` (21 verificações aprovadas).
+Capturas geradas pelo Playwright a partir da aplicação Mendix 11.6.0 em execução, na [execução 41869073172 do GitHub Actions](https://github.com/vicsolucoes/TPSI0226-Vicente-Cassule/actions/runs/41869073172) em `main`, de 04/11/2026, com sessões independentes e dados fictícios. O mesmo percurso guarda o resultado em `testes-interface.json` (21 verificações aprovadas).
 
 | Captura | O que demonstra |
 | --- | --- |

@@ -4,7 +4,7 @@ Validação de **04/11/2026** sobre as fontes do commit `8700da2` (branch `campu
 
 ## 1. GitHub Actions — Mendix 11.6.0 (versão oficial do projecto)
 
-[CampusFix Mendix, execução 41867763370](https://github.com/vicsolucoes/TPSI0226-Vicente-Cassule/actions/runs/41867763370), concluída com sucesso em Ubuntu 22.04, mxcli v0.28.0 (SHA256 verificado), MxBuild e runtime 11.6.0, Java 21, HSQLDB descartável.
+[execução 41867763370](https://github.com/vicsolucoes/TPSI0226-Vicente-Cassule/actions/runs/41867763370) na branch de desenvolvimento e [execução 41869073172](https://github.com/vicsolucoes/TPSI0226-Vicente-Cassule/actions/runs/41869073172) na integração em `main`, ambas concluídas com sucesso em Ubuntu 22.04, mxcli v0.28.0 (SHA256 verificado), MxBuild e runtime 11.6.0, Java 21, HSQLDB descartável.
 
 | Verificação | Resultado | Evidência |
 | --- | --- | --- |
@@ -12,7 +12,7 @@ Validação de **04/11/2026** sobre as fontes do commit `8700da2` (branch `campu
 | Regras no runtime Mendix | 16 testes, 45 verificações, 0 falhas | [testes.xml](../reports/testes.xml), [testes.log](../reports/testes.log) |
 | Navegador Chromium, quatro sessões independentes | 21 verificações aprovadas | [testes-interface.json](evidencias/testes-interface.json) |
 | Análise estática | 0 erros, 0 avisos, 5 notas informativas | [lint.txt](../reports/lint.txt) |
-| Demonstração visual | 5 capturas reais desta execução | [Galeria](evidencias/README.md) |
+| Demonstração visual | 5 capturas reais (as actuais vêm da execução em `main`) | [Galeria](evidencias/README.md) |
 
 Na CI as contas `cf_*` são contas demo efémeras com palavras-passe aleatórias, criadas apenas numa cópia descartável.
 
