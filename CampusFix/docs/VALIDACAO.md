@@ -22,9 +22,12 @@ Na CI as contas `cf_*` são contas demo efémeras com palavras-passe aleatórias
 | --- | --- |
 | Sistema | Windows 11 Home 10.0.26300 |
 | Ferramentas | mxcli v0.28.0 (SHA256 verificado), Java Temurin 21.0.13, Playwright 1.56.1 / Chromium |
-| Mendix usado | **11.12.5** (único Studio Pro instalado), numa cópia privada descartável convertida com `mx convert` |
+| Mendix usado | **11.6.0**: MxBuild e runtime do Studio Pro 11.6.0 instalado neste computador, sobre uma cópia privada do projecto sem conversão |
+| Verificação nativa | `mx check` do Studio Pro 11.6.0: 0 erros (com a palavra-passe privada definida, sem CE0129) |
 | Base de dados | HSQLDB local da cópia |
 | Endereço | `http://127.0.0.1:8080` |
+
+Antes da instalação do 11.6.0 fez-se uma primeira execução numa cópia descartável convertida para 11.12.5. Foi aí que se encontraram as falhas abaixo. Depois das correções, as mesmas 22 verificações passaram em 11.12.5 e em 11.6.0.
 
 Procedimento: cópia privada fora do repositório; palavra-passe privada do `MxAdmin` definida com a função `strip_credentials` de `scripts/sanitize-model.py`; arranque com `mxcli run --local --db-type hsqldb`; criação do `MxAdmin` pela API M2EE `create_admin_user` (o passo que o Studio Pro faz ao executar). O teste `scripts/ui-test.cjs` correu com `CAMPUSFIX_CREATE_ACCOUNTS=1`: o administrador criou as contas `cf_aluno_a`, `cf_aluno_b` e `cf_tecnico` na página **Utilizadores e perfis**, sem contas demo.
 
@@ -38,7 +41,7 @@ Falhas reais encontradas e corrigidas nesta validação:
 
 ## Cenários mínimos verificados
 
-| Cenário | CI 11.6.0 | Local |
+| Cenário | CI 11.6.0 | Local 11.6.0 |
 | --- | --- | --- |
 | A cria um pedido e consulta-o novamente | PASS | PASS |
 | B não vê nem obtém o pedido de A (interface e consulta repetida) | PASS | PASS |
@@ -59,8 +62,8 @@ A ligação persistida dos comentários ao autor (`Comentario_Autor`) e ao pedid
 
 ## Limitações desta validação
 
-- A execução local **não usou o Studio Pro 11.6.0**: o instalador oficial assinado está em `Downloads\Mendix-11.6.0-Setup.exe`, mas a instalação precisa de aprovação de administrador do Windows, que não foi dada nesta sessão. A versão 11.6.0 foi validada na CI; localmente foi usada a 11.12.5 numa cópia convertida, nunca no projecto entregue.
-- Na execução local em 11.12.5, a coluna *Roles* da grelha do módulo Administration mostra o aviso *Unable to get filter store*. Pertence ao módulo Administration do Marketplace, não ao CampusFix, e não impediu a criação de contas. Não foi verificado em 11.6.0.
+- A aplicação local foi arrancada pelo `mxcli run` com o MxBuild e o runtime do Studio Pro 11.6.0. A interface gráfica do Studio Pro (botão **Run locally**) não foi usada nesta validação.
+- A coluna *Roles* da grelha do módulo Administration mostra o aviso *Unable to get filter store*, em 11.6.0 e em 11.12.5. Pertence ao módulo Administration do Marketplace, não ao CampusFix, e não impediu a criação de contas.
 - As notas informativas do analisador referem os filtros XPath intencionais das listas e uma limitação da representação textual de um microflow. Não são erros.
 - As limitações funcionais estão em [MODELO_E_SEGURANCA.md](MODELO_E_SEGURANCA.md).
 

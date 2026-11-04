@@ -10,7 +10,7 @@ Versões fixadas: Mendix Studio Pro **11.6.0**, mxcli **v0.28.0**, Java **21**.
 
 Projecto Mendix nativo com modelo de domínio, páginas, microflows, permissões de entidades, quatro indicadores e testes automatizados. Os relatórios de execução ficam em `reports/` e as capturas reais em [docs/evidencias](docs/evidencias). O histórico de [GitHub Actions](https://github.com/vicsolucoes/TPSI0226-Vicente-Cassule/actions/workflows/campusfix.yml) conserva a compilação e os testes de cada alteração.
 
-Validação de 04/11/2026 com Mendix 11.6.0 no GitHub Actions: **0 erros na verificação nativa**, **16 testes de regras aprovados (45 verificações)** e **21 verificações no navegador aprovadas**, com cinco capturas reais. A aplicação foi também executada no Windows do aluno (22 verificações, incluindo a criação de contas pelo administrador). Ver [resultado, ambiente e limitações da validação](docs/VALIDACAO.md).
+Validação de 04/11/2026 com Mendix 11.6.0 no GitHub Actions: **0 erros na verificação nativa**, **16 testes de regras aprovados (45 verificações)** e **21 verificações no navegador aprovadas**, com cinco capturas reais. A aplicação foi também executada no Windows do aluno com o Mendix 11.6.0 (22 verificações, incluindo a criação de contas pelo administrador). Ver [resultado, ambiente e limitações da validação](docs/VALIDACAO.md).
 
 ## Objectivo e perfis
 

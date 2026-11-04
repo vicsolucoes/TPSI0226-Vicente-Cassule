@@ -1,6 +1,6 @@
 # Rastreabilidade do enunciado
 
-Fonte: `Projeto_Final_Mendix_CampusFix.docx`, lido na íntegra (secções 1 a 14 e 17; o documento não tem secções 15 e 16). Cada resultado refere uma execução real descrita em [VALIDACAO.md](VALIDACAO.md): **CI** = GitHub Actions com Mendix 11.6.0; **Local** = Windows 11 do aluno, cópia convertida para 11.12.5.
+Fonte: `Projeto_Final_Mendix_CampusFix.docx`, lido na íntegra (secções 1 a 14 e 17; o documento não tem secções 15 e 16). Cada resultado refere uma execução real descrita em [VALIDACAO.md](VALIDACAO.md): **CI** = GitHub Actions com Mendix 11.6.0; **Local** = Windows 11 do aluno, com o MxBuild e o runtime do Studio Pro 11.6.0.
 
 ## Matriz
 
@@ -23,7 +23,7 @@ Fonte: `Projeto_Final_Mendix_CampusFix.docx`, lido na íntegra (secções 1 a 14
 | Segurança no servidor | Entity Access XPath; `SUB_*` sem acesso de cliente; rascunhos sem escrita nos destinos | Consulta administrativa repetida com a sessão de B não devolve o pedido | PASS CI e Local | — |
 | Versionamento | Commits desde a base até às correções | `git log` no GitHub | Cumprido | — |
 | Evidências | 5 capturas e resultados JSON | Geradas pela execução CI 11.6.0 | Cumprido | — |
-| Execução no Studio Pro 11.6.0 local | — | — | Não executado | Instalar o Studio Pro 11.6.0 (aprovação de administrador do Windows) |
+| Execução local com Mendix 11.6.0 | Studio Pro 11.6.0 instalado; `mx check` e `mxcli run` | 0 erros; 22 verificações de interface | PASS Local | Botão Run locally da interface do Studio Pro não usado na validação |
 
 ## Testes automáticos de regras
 
