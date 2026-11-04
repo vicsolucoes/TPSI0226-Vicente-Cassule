@@ -1,5 +1,6 @@
 {
-  "executado_em": "2026-10-30T18:48:25.972Z",
+  "executado_em": "2026-11-04T16:33:29.944Z",
+  "base": "http://127.0.0.1:8080",
   "resultados": [
     {
       "teste": "Autenticação cf_admin",
@@ -10,11 +11,23 @@
       "resultado": "PASS"
     },
     {
+      "teste": "RF08 administrador edita categoria",
+      "resultado": "PASS"
+    },
+    {
+      "teste": "RF08 administrador desativa categoria (valor persistido reaberto)",
+      "resultado": "PASS"
+    },
+    {
       "teste": "Autenticação cf_aluno_a",
       "resultado": "PASS"
     },
     {
-      "teste": "RF02 RF03 RF06 utilizador cria consulta e comenta",
+      "teste": "RF08 categoria inativa não aparece no formulário de novo pedido",
+      "resultado": "PASS"
+    },
+    {
+      "teste": "RF02 RF03 RF06 utilizador cria, consulta e comenta; detalhe mostra categoria, estado, prioridade e autor",
       "resultado": "PASS"
     },
     {
@@ -34,15 +47,43 @@
       "resultado": "PASS"
     },
     {
+      "teste": "RF01 acesso direto de B aos URLs de categorias, todos os pedidos e área técnica é recusado",
+      "resultado": "PASS"
+    },
+    {
       "teste": "Autenticação cf_tecnico",
       "resultado": "PASS"
     },
     {
-      "teste": "RF05 RF07 técnico assume trata e conclui com nota",
+      "teste": "RF05 técnico assume o pedido e fica identificado como responsável",
       "resultado": "PASS"
     },
     {
-      "teste": "RF04 pedido resolvido fica fechado para o autor",
+      "teste": "RF05 RF07 técnico inicia tratamento e conclui com nota; data de conclusão registada",
+      "resultado": "PASS"
+    },
+    {
+      "teste": "RF04 RF07 pedido resolvido fica fechado para o autor (sem editar, comentar ou cancelar)",
+      "resultado": "PASS"
+    },
+    {
+      "teste": "RF06 comentários associados ao pedido com o autor correto (aluno e técnico)",
+      "resultado": "PASS"
+    },
+    {
+      "teste": "RF09 pesquisa por título e filtro por estado",
+      "resultado": "PASS"
+    },
+    {
+      "teste": "RF01 navegação de Utilizador: Painel inicial, Os meus pedidos, Novo pedido, Terminar sessão sem erros",
+      "resultado": "PASS"
+    },
+    {
+      "teste": "RF01 navegação de Técnico: Painel inicial, Área do técnico, Terminar sessão sem erros",
+      "resultado": "PASS"
+    },
+    {
+      "teste": "RF01 navegação de Administrador: Painel inicial, Todos os pedidos, Categorias, Utilizadores e perfis, Terminar sessão sem erros",
       "resultado": "PASS"
     }
   ]

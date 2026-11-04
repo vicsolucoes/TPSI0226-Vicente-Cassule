@@ -53,23 +53,23 @@ Cleaning up...
 
 Test Results: regras
 ============================================================
-  PASS  RF02 criação com autor data e estado automáticos (1.559s, 5 assertions)
-  PASS  RF03 outro utilizador não pode consultar o pedido (1.413s, 1 assertion)
-  PASS  RF05 utilizador comum não pode assumir pedido (1.388s, 2 assertions)
-  PASS  RF05 técnico assume e o segundo técnico não substitui (1.404s, 4 assertions)
-  PASS  RF05 só o técnico atribuído inicia tratamento (1.384s, 4 assertions)
-  PASS  RF07 concluir regista data nota e não repete a conclusão (1.392s, 5 assertions)
-  PASS  RF07 impede conclusão sem nota de resolução (1.365s, 2 assertions)
-  PASS  RF04 não edita pedido resolvido (1.387s, 3 assertions)
-  PASS  RF04 não edita pedido de outro autor (1.373s, 1 assertion)
-  PASS  RF04 edição válida mantém autor e data de criação (1.389s, 4 assertions)
-  PASS  RF06 comentário guarda pedido autor e data certos (1.385s, 4 assertions)
-  PASS  RF06 rejeita comentário de outro utilizador (1.391s, 2 assertions)
-  PASS  RF08 categoria inativa não aceita novos pedidos (1.358s, 1 assertion)
-  PASS  Extra cancelamento exclusivo do autor e estado terminal (1.358s, 5 assertions)
-  PASS  Extra edição desatualizada é recusada (1.356s, 1 assertion)
+  PASS  RF02 criação com autor data e estado automáticos (1.525s, 5 assertions)
+  PASS  RF03 outro utilizador não pode consultar o pedido (1.345s, 1 assertion)
+  PASS  RF05 utilizador comum não pode assumir pedido (1.343s, 2 assertions)
+  PASS  RF05 técnico assume e o segundo técnico não substitui (1.365s, 4 assertions)
+  PASS  RF05 só o técnico atribuído inicia tratamento (1.364s, 4 assertions)
+  PASS  RF07 concluir regista data nota e não repete a conclusão (1.369s, 5 assertions)
+  PASS  RF07 impede conclusão sem nota de resolução (1.34s, 2 assertions)
+  PASS  RF04 não edita pedido resolvido (1.367s, 3 assertions)
+  PASS  RF04 não edita pedido de outro autor (1.323s, 1 assertion)
+  PASS  RF04 edição válida mantém autor e data de criação (1.328s, 4 assertions)
+  PASS  RF06 comentário guarda pedido autor e data certos (1.324s, 4 assertions)
+  PASS  RF06 rejeita comentário de outro utilizador (1.331s, 2 assertions)
+  PASS  RF08 categoria inativa não aceita novos pedidos (1.326s, 1 assertion)
+  PASS  Extra cancelamento exclusivo do autor e estado terminal (1.329s, 5 assertions)
+  PASS  Extra edição desatualizada é recusada (1.33s, 1 assertion)
   PASS  Validação rejeita título demasiado curto (1ms, 1 assertion)
 ------------------------------------------------------------
-Total: 16  Passed: 16  Failed: 0  Skipped: 0  Time: 20.935s
+Total: 16  Passed: 16  Failed: 0  Skipped: 0  Time: 20.339s
 All tests passed.
 JUnit XML written to: reports/testes.xml
