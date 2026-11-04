@@ -1,0 +1,5 @@
+# Fontes MDL e scripts com LF: o mxcli compara texto (incluindo XPath multilinha) byte a byte.
+*.mdl text eol=lf
+*.sh text eol=lf
+*.py text eol=lf
+*.cjs text eol=lf

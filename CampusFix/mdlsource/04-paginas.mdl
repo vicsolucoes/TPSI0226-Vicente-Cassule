@@ -82,6 +82,7 @@ create or modify page CampusFix.Pedido_Gestao (
     column (Attribute: Titulo, Caption: 'Título') { textfilter procurar }
     column (Attribute: Estado, Caption: 'Estado') { dropdownfilter estado }
     column (Attribute: Prioridade, Caption: 'Prioridade') { dropdownfilter prioridade }
+    column (Attribute: Pedido_Categoria/Nome, Caption: 'Categoria')
     column (Attribute: TecnicoNome, Caption: 'Técnico')
     column (Caption: 'Ações') {
       actionbutton abrir (Caption: 'Abrir', Action: show page CampusFix.Pedido_Detalhe(Pedido = $currentObject))
@@ -141,6 +142,7 @@ create or modify page CampusFix.Pedido_Detalhe (
       dynamictext titulo (Attribute: Titulo, RenderMode: H1)
       dynamictext numero (Content: 'Pedido n.º {1}', ContentParams: ({1} = Numero))
       dynamictext estado (Content: 'Estado: {1} · Prioridade: {2}', ContentParams: ({1} = Estado, {2} = Prioridade))
+      dynamictext categoria (Content: 'Categoria: {1}', ContentParams: ({1} = Pedido_Categoria/Nome))
       dynamictext autor (Content: 'Criado por: {1}', ContentParams: ({1} = CriadorNome))
       dynamictext tecnico (Content: 'Técnico: {1}', ContentParams: ({1} = TecnicoNome))
       dynamictext datas (Content: 'Criação: {1} · Conclusão: {2}', ContentParams: (
@@ -240,7 +242,7 @@ create or modify page CampusFix.Categoria_Formulario (
       checkbox ativa (Label: 'Disponível para novos pedidos', Attribute: Ativa)
       footer {
         actionbutton guardar (Caption: 'Guardar categoria', Action: call microflow CampusFix.ACT_Categoria_Guardar(Categoria = $currentObject), ButtonStyle: primary)
-        actionbutton cancelar (Caption: 'Cancelar', Action: cancel changes)
+        actionbutton cancelar (Caption: 'Cancelar', Action: cancel changes close page)
       }
     }
   } } }
